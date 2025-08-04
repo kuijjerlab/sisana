@@ -12,7 +12,7 @@ def filter_for_user_defined_genes(datafile: pd.DataFrame, genes: list, verbose: 
     Parameters:
     -----------
         - datafile: str, Data frame containing the expression or indegrees of each gene (rows) per sample (column)
-        - genes: list, List of genes that the user wishes to fileter for
+        - genes: list, List of genes that the user wishes to filter for
     
     Returns:
     -----------
