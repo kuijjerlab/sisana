@@ -1,7 +1,6 @@
-# SiSaNA
-Single Sample Network Analysis
+# SiSaNA - Single Sample Network Analysis
 
-SiSaNA is used both before and after creating both PANDA and LIONESS networks from the package netZooPy. SiSaNA first needs to pre-process the data to be ran in PANDA/LIONESS. SiSaNA takes the LIONESS output, processes it to be analyzed downstream, and then calculates in- and out-degree for each of the reconstructed networks. Additionally, it can compare the expression/degree between groups of interest, including performing statistical tests, visualizing the results (volcano plots, boxplots, violin plots, and heatmaps), and compare the survival between groups.
+SiSaNA is a command line tool tool that utiliizes the PANDA and LIONESS algorithms from the netZooPy module to generate single sample regulatory networks. Using SiSaNA, users can easily calculate in- and out-degree for each of the reconstructed networks. Additionally, SiSaNA can compare the expression/degree between groups of interest, including performing statistical tests, visualizing the results (volcano plots, boxplots, violin plots, and heatmaps), and compare the survival between groups. All this is accomplished via the command line, with little to no programming experience necessary. 
 
 **Note: The steps below are for the basic use of SiSaNA. Additional functionalities are still under development.**
 
@@ -10,7 +9,7 @@ SiSaNA is used both before and after creating both PANDA and LIONESS networks fr
    
 ## Installation can be performed by running the following steps
 
-1. Create a conda virtual environment with python version 3.9.19. 
+1. Create a conda virtual environment with python version 3.9.19. Note: You need to substitute the path you want on your own system for the --prefix argument
 ```
 conda create --prefix </path/to/env-name> python=3.9.19
 ```
@@ -41,7 +40,7 @@ Example input files can be obtained using the command
 ```
 sisana -e
 ```
-These files will be copied to a new directory in the current working directory, called "example_inputs". One of these example files is the params.yml file, which can be used as a template and edited for your own data (see next section). Each user-defined parameter in the params.yml file is documented with a comment to explain the function of the parameter. The comments do not need to be removed prior to running SiSaNA. The files in this example_inputs directory can be used in the commands listed down below.
+These files will be downloaded from Zenodo (https://zenodo.org/records/15744634) and stored in a directory called "example_inputs". One of these example files is the params.yml file, which can be used as a template and edited for your own data (see next section). Each user-defined parameter in the params.yml file is documented with a comment to explain the function of the parameter. The comments do not need to be removed prior to running SiSaNA. The files in this example_inputs directory can be used in the commands listed down below.
 
 ## Viewing help documentation on SiSaNA
 To view help documentation on which subcommands are available, the following can be used:
