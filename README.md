@@ -9,7 +9,7 @@ SiSaNA is a command line tool tool that utiliizes the PANDA and LIONESS algorith
    
 ## Installation can be performed by running the following steps
 
-1. Create a conda virtual environment with python version 3.9.19. 
+1. Create a conda virtual environment with python version 3.9.19. Note: You need to substitute the path you want on your own system for the --prefix argument
 ```
 conda create --prefix </path/to/env-name> python=3.9.19
 ```
