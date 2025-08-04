@@ -1,6 +1,6 @@
 # SiSaNA - Single Sample Network Analysis
 
-SiSaNA is a command line tool tool that utiliizes the PANDA and LIONESS algorithms from the netZooPy module to generate single sample regulatory networks. Using SiSaNA, users can easily calculate in- and out-degree for each of the reconstructed networks. Additionally, they can compare the expression/degree between groups of interest, including performing statistical tests, visualizing the results (volcano plots, boxplots, violin plots, and heatmaps), and compare the survival between groups. All this is accomplished via the command line, with little to no programming experience necessary. 
+SiSaNA is a command line tool tool that utiliizes the PANDA and LIONESS algorithms from the netZooPy module to generate single sample regulatory networks. Using SiSaNA, users can easily calculate in- and out-degree for each of the reconstructed networks. Additionally, SiSaNA can compare the expression/degree between groups of interest, including performing statistical tests, visualizing the results (volcano plots, boxplots, violin plots, and heatmaps), and compare the survival between groups. All this is accomplished via the command line, with little to no programming experience necessary. 
 
 **Note: The steps below are for the basic use of SiSaNA. Additional functionalities are still under development.**
 
