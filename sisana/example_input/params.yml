@@ -8,6 +8,7 @@
 # example: sisana preprocess ./example_inputs/params.yml
 preprocess:
   exp_file: ./example_inputs/BRCA_TCGA_20_LumA_LumB_samps_5000_genes_exp.tsv # Path to expression file, which MUST CONTAIN A HEADER
+  filetype: tsv # The type of data file ("csv" or "txt" or "tsv") being used
   number: 5 # number of samples a gene must be expressed in
   outdir: ./output/preprocess # The directory to save the output to
 

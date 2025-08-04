@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import pandas as pd
-import argparse
 import sys
 import os
 from pathlib import Path
-import yaml
 
-def preprocess_data(exp: str, number: int, outdir: str):
+def preprocess_data(exp: str, datatype: str, number: int, outdir: str):
     """
     Description:
         This code performs a survival analysis between two user-defined groups and outputs
@@ -15,18 +13,10 @@ def preprocess_data(exp: str, number: int, outdir: str):
         
     Parameters:
     -----------\
-        - statsfile: str, Path to tab delimited file containing the fold change, p-value, FDR, and mean 
-          degree/statsression for each gene. This is reported with the compare_groups.py script
-        - fccol: str, The name of the column containing the difference in medians or means
-        - adjpcol: str, The name of the column containing the adj. p-value
-        - adjpvalthreshold: str, Threshold to use for the adjusted p-value
-        - genelist: str, Path to a .txt file containing a list of genes to plot. Alternatively, the top {numlabels} genes can be plotted instead if top=True.
-        - outdir: str, Path to directory to output file to
-        - difftype: str, The type of difference to use for the x-axis. "mean" will be difference in means and "median"
-          refers to difference in medians
-        - top: Flag for whether to automatically label the top 10 values. Does not use the genelist in this case, but rather finds the top genes
-          based on FDR and fold change.
-        - numlabels: int, Number of top values to label. Can only be used if top=True.
+        - exp: str, Path to the expression input data, with row names as genes and column names as samples
+        - datatype: str, Type of data (either "csv", "txt", or "tsv")
+        - number: int, The number of samples that must express a gene, eitherwise they are removed from downstream analysis
+        - outdir: str, Path to output directory
         
     Returns:
     -----------
@@ -39,8 +29,11 @@ def preprocess_data(exp: str, number: int, outdir: str):
     # Create output directory if one does not already exist
     os.makedirs(outdir, exist_ok=True)
         
-    expdf = pd.read_csv(exp, sep='\t', index_col=0)  
-    
+    if datatype == "csv":
+        expdf = pd.read_csv(exp, index_col = 0)
+    else:
+        expdf = pd.read_csv(exp, index_col = 0, sep = "\t")
+        
     with open("./tmp/samples.txt", "w") as f:
         for col in expdf.columns:
             f.write(col + "\n")

@@ -101,6 +101,7 @@ def cli():
         
         # Remove genes that are not expressed in at least the user-defined minimum ("number")
         f = preprocess_data(preprocess_params['exp_file'], 
+                        preprocess_params['filetype'], 
                         preprocess_params['number'],
                         preprocess_params['outdir'])    
         
@@ -130,7 +131,7 @@ def cli():
                 raise Exception("Error: Panda output file must have a .txt extension. Please edit your pandafilepath variable in your params file")
             os.makedirs(pandapath.parent, exist_ok=True)
             
-            expdf = pd.read_csv(generate_params['exp'], sep='\t', index_col=0)
+            # expdf = pd.read_csv(generate_params['exp'], sep='\t', index_col=0)
 
             panda_obj = Panda(expression_file=generate_params['exp'], 
                 motif_file=generate_params['motif'], 
@@ -154,7 +155,7 @@ def cli():
             
             lionesspath = Path(lioness_output_location)
 
-            lion = Lioness(panda_obj, 
+            Lioness(panda_obj, 
                            computing=generate_params['compute'], 
                            precision="double",
                            ncores=generate_params['ncores'], 
