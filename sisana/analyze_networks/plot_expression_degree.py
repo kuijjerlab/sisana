@@ -29,7 +29,7 @@ def plot_expression_degree(datafile: str, filetype: str, statsfile: str, metadat
         - plottype: str, The type of plot to create. Choices are "boxplot" or "violin"
         - groups: list(str), The names of the groups to plot, should ideally be a list of 5 names or less. Groups will be plotted 
                         in the order they are written in this argument
-        - colors: str, The colors for each group, in the same order the groups appear in the groups arg
+        - colors: list(str), The colors for each group, in the same order the groups appear in the groups arg
         - prefix: str, Prefix to use for the output figures
         - yaxisname: str, Name to use for the y-axis
         - outdir: str, Path to directory to output file to
@@ -135,7 +135,7 @@ def plot_expression_degree(datafile: str, filetype: str, statsfile: str, metadat
     subdata_melt.set_index('name')
     
     # Set colors for plotting if the user has specified colors      
-    if colors is not None:
+    if colors is not None: 
         assert len(colors) == len(groups)
         custom_colors  = colors
         sns.set_palette(custom_colors)
