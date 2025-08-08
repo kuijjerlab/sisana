@@ -32,7 +32,8 @@ def survival_analysis(metadata, filetype: str, sampgroup_colname: str, alivestat
         
     Returns:
     -----------
-        - string of the output file path
+        - list: [output file path (str), p-value (float), and whether result is "significant" or "non-significant" (str)]
+
     """
     
     # Create output directory if one does not already exist
@@ -67,16 +68,18 @@ def survival_analysis(metadata, filetype: str, sampgroup_colname: str, alivestat
     meta_array = meta_for_array.to_records(index=False)
     group_list = np.array(small_meta[sampgroup_colname])
     surv = compare_survival(meta_array, group_list, return_stats = True)
+    pvalue = surv[1]
+    signif = "significant" if pvalue < 0.05 else "non-significant"
   
     plt.ylim(0, 1)
     plt.ylabel(r"est. probability of survival $\hat{S}(t)$")
     plt.xlabel("time $t$")
     plt.legend(loc="best")
-    plt.text(.7, .7, f"pval: {surv[1]:.2E}", ha='center', va='top', transform=plt.gca().transAxes)
+    plt.text(.7, .7, f"pval: {pvalue:.2E}", ha='center', va='top', transform=plt.gca().transAxes)
     
     print(f"\nSurvival analysis results:")
     print(f"chi-square test-statistic: {surv[0]:.2E}")
-    print(f"p-value: {surv[1]:.1E}")
+    print(f"p-value: {pvalue:.2E}")
     
     print(f"\nSurvival analysis statistics:")
     print(surv[2])
@@ -96,7 +99,7 @@ def survival_analysis(metadata, filetype: str, sampgroup_colname: str, alivestat
             
     plt.close()
     
-    return(outfile_name)
+    return(outfile_name, pvalue, signif)
   
 
 

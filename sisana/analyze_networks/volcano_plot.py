@@ -34,7 +34,7 @@ def plot_volcano(statsfile: str, diffcol: str, adjpcol: str, adjpvalthreshold: s
 
     Returns:
     -----------
-        - string of the output file path 
+        - list: [output file path (str), number of "down" colored genes (int), and number of "up" colored genes (int)]
     """
 
     # Create output directory if one does not already exist
@@ -54,14 +54,17 @@ def plot_volcano(statsfile: str, diffcol: str, adjpcol: str, adjpvalthreshold: s
     not_down_or_up = stats[(stats[diffcol] < xaxisthreshold) & (stats[diffcol] > -1 * xaxisthreshold) & (stats[adjpcol] < adjpvalthreshold)]
     notsig = stats[stats[adjpcol] > adjpvalthreshold]
     
+    num_down_genes = len(down)
+    num_up_genes = len(up)
+    
     if len(down) + len(up) == 0:
         raise Exception("Error: No significant values found to plot.")
 
     group_names = diffcol.split("(")[1].strip(")").split("-")
 
-    plt.scatter(x=down[diffcol], y=down[adjpcol].apply(lambda x:-np.log10(x)), s=3, label=f"Up in {group_names[1]}", color="blue")
-    plt.scatter(x=up[diffcol], y=up[adjpcol].apply(lambda x:-np.log10(x)), s=3, label=f"Up in {group_names[0]}", color="orange")
-    plt.scatter(x=notsig[diffcol], y=notsig[adjpcol].apply(lambda x:-np.log10(x)), s=3, color="gainsboro")
+    plt.scatter(x=down[diffcol], y=down[adjpcol].apply(lambda x:-np.log10(x)), s=3, label=f"Higher in {group_names[1]}", color="blue")
+    plt.scatter(x=up[diffcol], y=up[adjpcol].apply(lambda x:-np.log10(x)), s=3, label=f"Higher in {group_names[0]}", color="orange")
+    plt.scatter(x=notsig[diffcol], y=notsig[adjpcol].apply(lambda x:-np.log10(x)), s=3, label="Not significant", color="gainsboro")
     plt.scatter(x=not_down_or_up[diffcol], y=not_down_or_up[adjpcol].apply(lambda x:-np.log10(x)), s=3, color="gainsboro")
 
     # Label the user-defined genes if given, otherwise plot just the top genes
@@ -111,6 +114,9 @@ def plot_volcano(statsfile: str, diffcol: str, adjpcol: str, adjpvalthreshold: s
     adjust_text(uptexts,arrowprops=dict(arrowstyle="-", color='black', lw=0.5), force_text=(2,2))        
     adjust_text(dntexts,arrowprops=dict(arrowstyle="-", color='black', lw=0.5))
     
+    # In the legend, adjust the distance between the marker and the group label
+    ax.legend(handletextpad=0.1)
+
     if difftype == "mean":
         plt.xlabel("Difference in mean degree")
     elif difftype == "median":
@@ -132,5 +138,5 @@ def plot_volcano(statsfile: str, diffcol: str, adjpcol: str, adjpvalthreshold: s
         
     print(f"File saved: {outname}")     
     
-    return(outname)
+    return(outname, num_down_genes, num_up_genes)
     

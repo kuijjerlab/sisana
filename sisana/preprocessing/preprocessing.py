@@ -12,7 +12,7 @@ def preprocess_data(exp: str, datatype: str, number: int, outdir: str):
         both the survival plot and the statistics for the comparison(s)
         
     Parameters:
-    -----------\
+    -----------
         - exp: str, Path to the expression input data, with row names as genes and column names as samples
         - datatype: str, Type of data (either "csv", "txt", or "tsv")
         - number: int, The number of samples that must express a gene, eitherwise they are removed from downstream analysis
@@ -20,7 +20,7 @@ def preprocess_data(exp: str, datatype: str, number: int, outdir: str):
         
     Returns:
     -----------
-        - str of the output file location 
+        - list: [output file path (str), number of genes kept (int), and number of removed genes (int)]
     """
     
     # Create output file prefix by removing the .txt suffix
@@ -58,8 +58,10 @@ def preprocess_data(exp: str, datatype: str, number: int, outdir: str):
     dist = dist.sort_values(by='Number of samples with expression', ascending=False)
     dist['Removed?'] = dist['Number of samples with expression'].apply(lambda x: 'yes' if x < number else 'no')
     print(dist.to_string(index=False))
+    sum_kept = dist[dist['Removed?'] == 'no']['Number of instances'].sum()
     sum_removed = dist[dist['Removed?'] == 'yes']['Number of instances'].sum()
     print(f"Number of genes removed in total: {sum_removed}")
+    print(f"Number of genes remaining for downstream analysis: {sum_kept}")
 
     basename = f"{expoutfile}_preprocessed.txt"
     file_outloc = os.path.join(outdir, basename)
@@ -67,7 +69,7 @@ def preprocess_data(exp: str, datatype: str, number: int, outdir: str):
     cutdf.to_csv(file_outloc, sep = "\t")    
     print(f"\nFile saved: {file_outloc}")
     
-    return(file_outloc)
+    return(file_outloc, sum_kept, sum_removed)
     
     
     

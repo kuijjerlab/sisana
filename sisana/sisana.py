@@ -4,7 +4,7 @@ from netZooPy.panda.panda import Panda
 from netZooPy.lioness.lioness import Lioness
 from sisana.preprocessing import preprocess_data
 from sisana.postprocessing import convert_lion_to_pickle, extract_tfs_genes
-from sisana.analyze_networks import calculate_panda_degree, calculate_lioness_degree, compare_bw_groups, survival_analysis, perform_gsea, plot_volcano, plot_expression_degree, plot_heatmap, plot_clustermap
+from sisana.analyze_networks import calculate_panda_degree, calculate_lioness_degree, compare_bw_groups, survival_analysis, perform_gsea, plot_volcano, plot_expression_degree, plot_heatmap, plot_clustermap, summarize
 from sisana.example_input import find_example_paths, fetch_files
 import sisana.docs
 from sisana.docs import create_log_file
@@ -46,6 +46,7 @@ def cli():
     comp = subparsers.add_parser('compare', help='Compare networks between sample groups', epilog=sisana.docs.compare_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
     gsea = subparsers.add_parser('gsea', help='Perform gene set enrichment analysis between sample groups', epilog=sisana.docs.gsea_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
     vis = subparsers.add_parser('visualize', help='Visualize the calculated degrees of each sample group', epilog=sisana.docs.visualize_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
+    summ = subparsers.add_parser('summarize', aliases=["summarise"], help='Summarize the outputs in an html file', epilog=sisana.docs.summarize_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
 
     # options for preprocess subcommand
     # pre.add_argument("-t", "--template", action="store_true", help='Flag for whether to show the path to the template file')
@@ -68,6 +69,9 @@ def cli():
     # options for visualize subcommand
     vis.add_argument("plotchoice", type=str, choices = ["all", "quantity", "heatmap", "volcano"], nargs='?', default="all", help="The type of plot to create")   
     vis.add_argument("params", type=str, help='Path to yaml file containing the parameters to use')
+    
+    # options for summarize subcommand    
+    summ.add_argument("logdir", nargs='?', type=str, default="./log_files/", help='Path to the directory containing the previously made log files')
 
     args = parser.parse_args()
       
@@ -78,8 +82,12 @@ def cli():
         fetch_files()
         print("Example input files have been created in ./example_inputs/")
         sys.exit(0)
-        
-    params = yaml.load(open(args.params), Loader=yaml.FullLoader)
+    
+    if args.command != "summarize" and args.command != "summarise": 
+        params = yaml.load(open(args.params), Loader=yaml.FullLoader)
+    else:
+        summarize(args.logdir)
+        sys.exit(0)
 
     # Create output for temp files if one does not already exist
     os.makedirs('./tmp/', exist_ok=True)
@@ -100,16 +108,21 @@ def cli():
         #         f.write(f"{line}\n")
         
         # Remove genes that are not expressed in at least the user-defined minimum ("number")
-        f = preprocess_data(preprocess_params['exp_file'], 
+        results = preprocess_data(preprocess_params['exp_file'], 
                         preprocess_params['filetype'], 
                         preprocess_params['number'],
                         preprocess_params['outdir'])    
         
-        file_name = [f]
+        fname, genes_kept, genes_removed = results[0], results[1], results[2] 
+            
+        removed_str = f"genes removed: {genes_removed}"
+        kept_str = f"genes kept: {genes_kept}"
+        
+        extra_info_preprocess = [removed_str, kept_str]
         
         create_log_file("preprocess", 
-                        preprocess_params, 
-                        file_name)
+            preprocess_params, 
+            [fname], extra_info_preprocess)
         
     ########################################################
     # 2) Run PANDA, using the parameters from the yaml file
@@ -267,10 +280,18 @@ def cli():
                                 days_colname=compare_survival_params["days_colname"],
                                 groups=compare_survival_params["groups"],
                                 outdir=compare_survival_params["outdir"])
-                
+            fnames, pval, sig = outfiles[0], outfiles[1], outfiles[2] 
+            
+            pval_str = f"p-value: {pval}"
+            sig_str = f"significant?: {sig}"
+            
+            extra_info = []
+            extra_info.append(pval_str)
+            extra_info.append(sig_str)
+            
             create_log_file("compare_survival", 
                 compare_survival_params, 
-                [outfiles])
+                [fnames], extra_info)
 
     ########################################################
     # 4) Perform gene set enrichment analysis
@@ -297,7 +318,7 @@ def cli():
         if args.plotchoice == "volcano":    
             volcano_params = params["visualize"]["volcano"]
 
-            outfiles = plot_volcano(statsfile=volcano_params["statsfile"],
+            outfiles, down_gene_count, up_gene_count = plot_volcano(statsfile=volcano_params["statsfile"],
                          diffcol=volcano_params["diffcol"],
                          adjpcol=volcano_params["adjpcol"],
                          adjpvalthreshold=volcano_params["adjpvalthreshold"],
@@ -307,9 +328,14 @@ def cli():
                          outdir=volcano_params["outdir"],
                          top=False)      
             
+            down_gene_str = f"number of genes up in group 1: {down_gene_count}"
+            up_gene_str = f"number of genes up in group 2: {up_gene_count}"
+            
+            extra_info_num_genes = [down_gene_str, up_gene_str]
+            
             create_log_file("volcano_plot", 
                 volcano_params, 
-                [outfiles])
+                [outfiles], extra_info_num_genes)
     
         if args.plotchoice == "quantity":   
             quantity_params = params["visualize"]["quantity"]
@@ -397,4 +423,4 @@ def cli():
         create_log_file("extract", 
                 extract_params, 
                 [outfiles])  
-            
+        

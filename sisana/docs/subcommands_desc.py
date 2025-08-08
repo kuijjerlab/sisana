@@ -188,3 +188,22 @@ Output files:
       - Note: This file is only created if an error occurs when trying to filter for genes/TFs.
     
 """
+
+
+summarize_desc = """
+-----------------------------------
+(Optional step) - Summarize
+-----------------------------------
+
+This is an optional step that summarizes output figures in a single html output
+
+Examples: sisana summarize ./log_files/
+
+Input files:
+  - None, just supply the path to the log_files directory, or SiSaNA will attempt
+    to use the ./log_files/ directory by default if no directory is specified
+  
+Output files:
+  - results_summarized.html
+    
+"""

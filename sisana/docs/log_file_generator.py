@@ -1,7 +1,7 @@
 import sys
 import os
 
-def create_log_file(subcommand: str, params_dict: dict, filenames: list): 
+def create_log_file(subcommand: str, params_dict: dict, filenames: list, additional_info=["None"]): 
     """
     Description:
         This function creates log files for each command the user performs
@@ -11,6 +11,7 @@ def create_log_file(subcommand: str, params_dict: dict, filenames: list):
         - subcommand: str, The name of the subcommand used
         - params_dict: dict, The dictionary of the parameters the user supplied
         - filenames: list, The list of file paths that were created with the subcommand
+        - additional_info: List of additional strings to add to the end of the log file
         
     Returns:
     -----------
@@ -27,15 +28,18 @@ def create_log_file(subcommand: str, params_dict: dict, filenames: list):
     fixed_names = [n[2:] if n[:2] == "./" else n for n in filenames]
     
     with open(file_outloc, "w") as file:
-        file.write("Directory analysis was performed in:\n")
-        file.write(f"   - {os.getcwd()}\n")
+        file.write(f"Analysis directory: {os.getcwd()} \n")
         
         file.write("\nParameters used:\n")
         for k,v in params_dict.items():
-            file.write(f"   - {k}: {v}\n")
+            file.write(f"  {k}: {v}\n")
         
-        file.write("\nFile(s) generated:\n")
+        file.write("\nFiles generated:\n")
         for i in fixed_names: 
-            file.write("   - " + i + "\n")
+            file.write("  - " + i + "\n")
+
+        file.write("\nAdditional information:\n")            
+        for i in additional_info:
+            file.write("  - " + i + "\n")
 
             
