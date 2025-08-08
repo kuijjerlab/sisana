@@ -157,3 +157,6 @@ OR
 
 sisana summarize </path/to/log_files/>
 ```
+<p align="center">
+  <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/example_html_output.png" width="500" />
+</p> 
