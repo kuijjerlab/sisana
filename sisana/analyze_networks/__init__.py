@@ -6,3 +6,4 @@ from .heatmap import plot_heatmap
 from .clustermap import plot_clustermap
 from .plot_expression_degree import plot_expression_degree
 from .lioness_df_indeg_outdeg_calculator import calculate_panda_degree, calculate_lioness_degree
+from .summarize_results import summarize
