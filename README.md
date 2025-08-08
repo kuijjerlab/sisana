@@ -123,7 +123,7 @@ sisana gsea ./example_inputs/params.yml
 </p>
 
 ## Visualization of results
-The final stage of SiSaNA, "visualize" allows you to visualize the results of your analysis on publication-ready figures. There are multiple types of visualization you can perform, including generating volcano plots...
+The "visualize" subcommand allows you to visualize the results of your analysis on publication-ready figures. There are multiple types of visualization you can perform, including generating volcano plots...
 ```
 sisana visualize volcano ./example_inputs/params.yml
 ```
@@ -146,3 +146,14 @@ sisana visualize heatmap ./example_inputs/params.yml
 <p align="center">
   <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/TCGA_200_LumA_LumB_samps_heatmap.png" width="500" />
 </p> 
+
+
+## Summarizing results
+The final stage of SiSaNA, "summarize" takes all the created images and outputs them in a single html file for convenience. This can then be opened in a web browser. Please note that this subcommand will automatically attempt to look in the ./log_files/ directory for the required input files. If running from another directory, you will need to provide the path to to the log_files directory manually
+```
+sisana summarize
+
+OR
+
+sisana summarize </path/to/log_files/>
+```
