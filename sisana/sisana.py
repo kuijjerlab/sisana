@@ -144,8 +144,6 @@ def cli():
                 raise Exception("Error: Panda output file must have a .txt extension. Please edit your pandafilepath variable in your params file")
             os.makedirs(pandapath.parent, exist_ok=True)
             
-            # expdf = pd.read_csv(generate_params['exp'], sep='\t', index_col=0)
-
             panda_obj = Panda(expression_file=generate_params['exp'], 
                 motif_file=generate_params['motif'], 
                 ppi_file=generate_params['ppi'], 
@@ -162,25 +160,43 @@ def cli():
             calculate_panda_degree(inputfile=panda_output_location)
                
         if generate_params['method'].lower() == 'lioness':
-            lioness_output_location = generate_params['lionessfilepath']
-            if lioness_output_location[-4:] != ".npy":
-                raise Exception("Error: Lioness output file must have a .npy extension. Please edit your lionessfilepath variable in your params file.")
-            
-            lionesspath = Path(lioness_output_location)
+            lioness_full_path = generate_params['lionessfilepath']
 
-            Lioness(panda_obj, 
+            if lioness_full_path[-4:] != ".npy":
+                raise Exception("Error: Lioness output file must have a .npy extension. Please edit your lionessfilepath variable in your params file.")
+
+            lionesspath_no_ext = lioness_full_path[:-4]
+
+            if generate_params['start'] is not None:
+                lionesspath_new_path = Path(f"{lionesspath_no_ext}_samples_{generate_params['start']}_to_{generate_params['end']}.npy")                
+            else:
+                lionesspath_new_path = Path(lioness_full_path)
+
+            lioness_full_path = Path(lioness_full_path)
+
+            # Run Lioness on a subset of samples if specified in the params file, otherwise run on all samples
+            if generate_params['start'] is not None:
+                Lioness(panda_obj, 
                            computing=generate_params['compute'], 
                            precision="double",
                            ncores=generate_params['ncores'], 
-                           save_dir=lionesspath.parent, 
+                           save_dir=lioness_full_path.parent, 
+                           save_fmt="npy",
+                           start=generate_params['start'],
+                           end=generate_params['end'])
+            else:
+                Lioness(panda_obj, 
+                           computing=generate_params['compute'], 
+                           precision="double",
+                           ncores=generate_params['ncores'], 
+                           save_dir=lioness_full_path.parent, 
                            save_fmt="npy")
             
             # Rename the default name of the lioness output file, which is not an option of the current Lioness NetZooPy cli
-            os.rename(os.path.join(lionesspath.parent, "lioness.npy"), lioness_output_location)
+            os.rename(os.path.join(lioness_full_path.parent, "lioness.npy"), lionesspath_new_path)
 
             #lion_loc = params['generate']['outdir'] + "lioness.npy"
-            lion_loc = lioness_output_location
-            liondf = pd.DataFrame(np.load(lion_loc))            
+            liondf = pd.DataFrame(np.load(lionesspath_new_path))            
                 
             # To make the edges positive values for log2FC calculation later on, first need to transform 
             # edges by doing ln(e^w + 1), then calculate degrees. Then you can do the log2FC of degrees
@@ -205,34 +221,42 @@ def cli():
                                 liondf,
                                 "npy", 
                                 './tmp/samples.txt',  
-                                pickle_path)
+                                pickle_path,
+                                start=generate_params['start'],
+                                end=generate_params['end'])
             
             print("\nLIONESS networks created. Now calculating LIONESS degrees...")
             calculate_lioness_degree(inputfile=pickle_path,
                             datatype="pickle")
             print("LIONESS degrees have now been calculated.")
+            
+            if generate_params['start'] is not None:
+                lioness_indeg_filename = f"lioness_indegree_samples_{generate_params['start']}_to_{generate_params['end']}"
+                lioness_outdeg_filename = f"lioness_outdegree_samples_{generate_params['start']}_to_{generate_params['end']}"
+            else:
+                lioness_indeg_filename = f"lioness_indegree"
+                lioness_outdeg_filename = f"lioness_outdegree"
 
             # Move degree files from .tmp to user's output location
-            Path("./tmp/lioness_indegree.csv").rename(f"{Path(lioness_output_location).parent}/lioness_indegree.csv")
-            Path("./tmp/lioness_outdegree.csv").rename(f"{Path(lioness_output_location).parent}/lioness_outdegree.csv")
+            Path("./tmp/lioness_indegree.csv").rename(f"{Path(lioness_full_path).parent}/{lioness_indeg_filename}.csv")
+            Path("./tmp/lioness_outdegree.csv").rename(f"{Path(lioness_full_path).parent}/{lioness_outdeg_filename}.csv")
+
+            print(f"LIONESS network saved to {str(lionesspath_new_path)}")
+            print(f"LIONESS degrees saved to:")
+            print(f"{Path(lioness_full_path).parent}/{lioness_indeg_filename}.csv")
+            print(f"{Path(lioness_full_path).parent}/{lioness_outdeg_filename}.csv")
                 
         print(f"\nPANDA network saved to {panda_output_location}")
         print(f"PANDA degrees saved to:") 
         print(f"{str(panda_output_location)[:-4]}_outdegree.csv")
         print(f"{str(panda_output_location)[:-4]}_indegree.csv")
         
-        if generate_params['method'].lower() == 'lioness':        
-            print("\nLIONESS network saved to " + lioness_output_location)
-            print(f"LIONESS degrees saved to:")
-            print(f"{Path(lioness_output_location).parent}/lioness_indegree.csv")
-            print(f"{Path(lioness_output_location).parent}/lioness_outdegree.csv")
-            
         outfiles = [panda_output_location,
                     f"{str(panda_output_location)[:-4]}_outdegree.csv",
                     f"{str(panda_output_location)[:-4]}_indegree.csv",
-                    lion_loc,
-                    f"{Path(lioness_output_location).parent}/lioness_indegree.csv",
-                    f"{Path(lioness_output_location).parent}/lioness_outdegree.csv"]
+                    str(lioness_full_path),
+                    f"{Path(lioness_full_path).parent}/{lioness_indeg_filename}.csv",
+                    f"{Path(lioness_full_path).parent}/{lioness_outdeg_filename}.csv"]
             
         create_log_file("generate", 
                         generate_params, 

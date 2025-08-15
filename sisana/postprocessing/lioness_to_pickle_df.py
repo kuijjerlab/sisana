@@ -4,7 +4,7 @@ import pandas as pd
 import argparse
 from .post import files_to_dfs
 
-def convert_lion_to_pickle(panda: str, lion: str, type: str, names: str, outfile: str):    
+def convert_lion_to_pickle(panda: str, lion: str, type: str, names: str, outfile: str, start: int=None, end: int=None):    
     '''
     Creates data frames from the input panda and lioness files        
      
@@ -15,7 +15,9 @@ def convert_lion_to_pickle(panda: str, lion: str, type: str, names: str, outfile
         - type: str, file type of lioness file, either npy or txt
         - names: str, File with list of sample names (one per line) in the same order that were supplied for panda/lioness
         - outfile: str, Path to output file in pickle format (e.g. lioness.pickle)
-    
+        - start: the starting index of samples that networks were created for
+        - end: the ending index of samples that networks were created for
+        
     Returns:
     -----------
         - Nothing
@@ -30,8 +32,12 @@ def convert_lion_to_pickle(panda: str, lion: str, type: str, names: str, outfile
         for line in file: 
             samps.append(line.strip())
 
-    lion.index = pan["TF-gene"]  
-    lion.columns = samps 
+    lion.index = pan["TF-gene"] 
+
+    if start is not None:
+        lion.columns = samps[start-1:end]        
+    else:
+        lion.columns = samps 
     
     savefile = outfile
     lion.to_pickle(savefile)   
