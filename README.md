@@ -4,6 +4,9 @@ SiSaNA is a command line tool tool that utiliizes the PANDA and LIONESS algorith
 
 **Note: The steps below are for the basic use of SiSaNA. Additional functionalities are still under development.**
 
+## Table of contents
+-[Requirements](#requirements)
+
 ## Requirements
  - python v3.9.19 (see installation steps for creating a conda environment with this specific Python version). SiSaNA should work with versions of Python 3.9.0 or greater, but as it has been written and tested on this version, we will use 3.9.19.
    
