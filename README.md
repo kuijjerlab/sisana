@@ -5,12 +5,15 @@ SiSaNA is a command line tool tool that utiliizes the PANDA and LIONESS algorith
 **Note: The steps below are for the basic use of SiSaNA. Additional functionalities are still under development.**
 
 ## Table of contents
--[Requirements](#requirements)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Help documentation](#sisana-help-documentation)
+- [Pre-processing of data](#step-1-pre-processing-of-data)
 
 ## Requirements
  - python v3.9.19 (see installation steps for creating a conda environment with this specific Python version). SiSaNA should work with versions of Python 3.9.0 or greater, but as it has been written and tested on this version, we will use 3.9.19.
    
-## Installation can be performed by running the following steps
+## Installation
 
 1. Create a conda virtual environment with python version 3.9.19. Note: You need to substitute the path you want on your own system for the --prefix argument
 ```
@@ -45,7 +48,7 @@ sisana -e
 ```
 These files will be downloaded from Zenodo (https://zenodo.org/records/15744634) and stored in a directory called "example_inputs". One of these example files is the params.yml file, which can be used as a template and edited for your own data (see next section). Each user-defined parameter in the params.yml file is documented with a comment to explain the function of the parameter. The comments do not need to be removed prior to running SiSaNA. The files in this example_inputs directory can be used in the commands listed down below.
 
-## Viewing help documentation on SiSaNA
+## SiSaNA help documentation
 To view help documentation on which subcommands are available, the following can be used:
 ```
 sisana -h
