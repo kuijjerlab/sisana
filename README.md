@@ -17,7 +17,8 @@ SiSaNA is a command line tool tool that utiliizes the PANDA and LIONESS algorith
   - [Step 3: Comparing two experimental groups](#step-3-comparing-two-experimental-groups)
   - [Step 4: Survival analysis](#step-4-survival-analysis)
   - [Step 5: Performing gene set enrichment analysis](#step-5-performing-gene-set-enrichment-analysis)
-  - [Step 6: Summarize your results](#step-6-summarize-your-results)
+  - [Step 6: Visualization of results](#step-6-visualization-of-results)
+  - [Step 7: Summarize your results](#step-7-summarize-your-results)
 
 ## Requirements
  - python v3.9.19 (see installation steps for creating a conda environment with this specific Python version). SiSaNA should work with versions of Python 3.9.0 or greater, but as it has been written and tested on this version, we will use 3.9.19.
@@ -116,6 +117,7 @@ To compare the values between two groups in order to identify differentially exp
 ```
 sisana compare ./example_inputs/params.yml
 ```
+<br />
 
 ## Step 4: Survival analysis
 For performing survival analyses, you can use a command like this:
@@ -126,6 +128,7 @@ sisana survival ./example_inputs/params.yml
 <p align="center">
   <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/LumA_v_LumB_survival_plot.png" width="500" />
 </p>
+<br />
 
 ## Step 5: Performing gene set enrichment analysis 
 "sisana gsea" is used to perform gene set enrichment analysis (GSEA) to identify pathways that are differentially regulated based on the gene targeting scores. It uses the ranks of genes found in the previous step (sisana compare means) as input.
@@ -139,6 +142,7 @@ sisana gsea ./example_inputs/params.yml
 <p align="center">
   <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/comparison_mw_between_LumA_LumB_degree_ranked_mediandiff_GSEA_Hallmarks_basic_enrichment_dotplot.png" width="500" />
 </p>
+<br />
 
 ## Step 6: Visualization of results
 The "visualize" subcommand allows you to visualize the results of your analysis on publication-ready figures. There are multiple types of visualization you can perform, including generating volcano plots...
@@ -165,8 +169,7 @@ sisana visualize heatmap ./example_inputs/params.yml
   <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/TCGA_200_LumA_LumB_samps_heatmap.png" width="500" />
 </p> 
 
-
-## Step 6: Summarize your results
+## Step 7: Summarize your results
 The final stage of SiSaNA, "summarize", takes all the created images and outputs them in a single html file for convenience. This can then be opened in a web browser. Please note that this subcommand will automatically attempt to look in the ./log_files/ directory for the required input files. If running from another directory, you will need to provide the path to to the log_files directory manually.
 ```
 sisana summarize
