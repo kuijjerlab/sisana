@@ -1,6 +1,6 @@
 # SiSaNA - Single Sample Network Analysis
 
-SiSaNA is a command line tool tool that utiliizes the PANDA and LIONESS algorithms from the netZooPy module to generate single sample regulatory networks. Using SiSaNA, users can easily calculate in- and out-degree for each of the reconstructed networks. Additionally, SiSaNA can compare the expression/degree between groups of interest, including performing statistical tests, visualizing the results (volcano plots, boxplots, violin plots, and heatmaps), and compare the survival between groups. All this is accomplished via the command line, with little to no programming experience necessary. 
+SiSaNA is a command line tool that utiliizes the PANDA and LIONESS algorithms from the netZooPy module to generate single sample regulatory networks. Using SiSaNA, users can easily calculate in- and out-degree for each of the reconstructed networks. Additionally, SiSaNA can compare the expression/degree between groups of interest, including performing statistical tests, visualizing the results (volcano plots, boxplots, violin plots, and heatmaps), and compare the survival between groups. All this is accomplished via the command line, with little to no prior programming experience required. 
 
 **Note: The steps below are for the basic use of SiSaNA. Additional functionalities are still under development.**
 
@@ -131,7 +131,7 @@ sisana survival ./example_inputs/params.yml
 <br />
 
 ## Step 5: Performing gene set enrichment analysis 
-"sisana gsea" is used to perform gene set enrichment analysis (GSEA) to identify pathways that are differentially regulated based on the gene targeting scores. It uses the ranks of genes found in the previous step (sisana compare means) as input.
+"sisana gsea" is used to perform gene set enrichment analysis (GSEA) to identify pathways that are differentially regulated based on the gene targeting scores. It uses the ranks of genes found in the previous step (sisana compare) as input.
 
 #### Example commands
 ```
@@ -145,7 +145,7 @@ sisana gsea ./example_inputs/params.yml
 <br />
 
 ## Step 6: Visualization of results
-The "visualize" subcommand allows you to visualize the results of your analysis on publication-ready figures. There are multiple types of visualization you can perform, including generating volcano plots...
+The "visualize" command allows you to visualize the results of your analysis on publication-ready figures. There are multiple types of visualization you can perform, including generating volcano plots...
 ```
 sisana visualize volcano ./example_inputs/params.yml
 ```
