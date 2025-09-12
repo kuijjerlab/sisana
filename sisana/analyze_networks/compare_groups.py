@@ -4,7 +4,7 @@ import numpy as np
 from pathlib import Path
 import csv
 from scipy import stats
-from .analyze import file_to_list, map_samples, calc_tt, calc_group_difference
+from .analyze import file_to_list, map_samples, calc_tt, calc_group_difference, NotASubsetError
 import sys
 from numpy import log
 
@@ -69,6 +69,18 @@ def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, 
         compdf = datadf
         
     del datadf
+    
+    # Validate that the samples in the mapping file are a subset of those in the data frame
+    samps_list_group1 = sampdict[groups[0]]
+    samps_list_group2 = sampdict[groups[1]]
+    
+    print(f"Numbers of samples in group 1: {len(samps_list_group1)}")
+    print(f"Numbers of samples in group 2: {len(samps_list_group2)}")
+    
+    if not set(samps_list_group1).issubset(list(compdf.columns)):
+        raise NotASubsetError(user_list=samps_list_group1, data_list=compdf.columns, dtype="samples")
+    if not set(samps_list_group2).issubset(list(compdf.columns)):
+        raise NotASubsetError(user_list=samps_list_group2, data_list=compdf.columns, dtype="samples")
         
     print("Performing comparisons, please wait...")
     # Calculate p-value/FDR
