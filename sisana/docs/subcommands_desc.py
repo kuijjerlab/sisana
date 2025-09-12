@@ -47,47 +47,63 @@ Output files:
     
 """
 
+combine_desc = """
+-----------------------------------
+Step 2.5 - Combine (OPTIONAL)
+-----------------------------------
+
+This command is used only if "batching" the LIONESS runs in the previous step, which 
+produces multiple output files in the form of lioness_indegree_samples_*_to_*.csv and
+lioness_outdegree_samples_*_to_*.csv. This step combines them intp a single output 
+file for downstream analysis
+
+Example: sisana combine params.yml
+
+Output files: 
+  - lioness_indegree.csv
+  - lioness_outdegree.csv
+"""
+
 compare_desc = """
 -----------------------------------
-Step 3 - Compare
+Step 3 - Compare two groups
 -----------------------------------
 
-Compare is the third step in the SiSaNA pipeline. In this step, the samples can be compared 
-in a number of different ways.
+Compare is the third step in the SiSaNA pipeline. This step Compares the means between two 
+sample groups. This performs a t-test or Mann-Whitney test (or their paired alternatives) 
+between two groups. Users can compare differences in indegree/outdegree or expression at this step.
 
-  ----- Option 1: means -----
-  Compares the means between two sample groups. This performs a t-test or Mann-Whitney
-  test (or their paired alternatives) between two groups. Users can compare differences
-  in indegree/outdegree or expression at this step.
+Example: sisana compare params.yml
+
+Input files:
+  - datafile: Data file (either expression, indegree, or outdegree) in tsv or csv format
+  - mapfile: CSV mapping file, which maps sample name (column 1) to sample group (column 2). Assumes file has a header.
   
-  Example: sisana compare means params.yml
+Output files:
+  - A .rnk file that is in rnk format, ranked on test statistic, for use with "sisana gsea"
+  - A .txt file containing all the statistical outputs for the analysis
+"""
 
-  Input files:
-    - datafile: Data file (either expression, indegree, or outdegree) in tsv or csv format
-    - mapfile: CSV mapping file, which maps sample name (column 1) to sample group (column 2). Assumes file has a header.
-    
-  Output files:
-    - A .rnk file that is in rnk format, ranked on test statistic, for use with "siana compare gsea"
-    - A .txt file containing all the statistical outputs for the analysis
-      
-  ----- Option 2: survival -----
-  Performs a survival analysis between two groups.
+survival_desc = """
+-----------------------------------
+Step 4 - Survival analysis
+-----------------------------------
+Performs a survival analysis between two groups.
 
-  Example: sisana compare survival params.yml
+Example: sisana survival params.yml
 
-  Input files:
-    - Either a comma-separated or tab-separated metadata file mapping sample names to sample groups.
-      Must also contain a column that contains the status of the individual. Must contain True/False 
-      values only, where True = dead (event occurred) and False = alive.
-  
-  Output files:
-    - *survival_plot.png: A Kaplan-Meier plot with the two-sided p-value calculated with sksurv.compare.compare_survival
-  
+Input files:
+  - Either a comma-separated or tab-separated metadata file mapping sample names to sample groups.
+    Must also contain a column that contains the status of the individual. Must contain True/False 
+    values only, where True = dead (event occurred) and False = alive.
+
+Output files:
+  - *survival_plot.png: A Kaplan-Meier plot with the two-sided p-value calculated with sksurv.compare.compare_survival
 """
 
 gsea_desc = """
 -----------------------------------
-Step 4 - GSEA
+Step 5 - GSEA
 -----------------------------------
 
 Perform gene set enrichment analysis (GSEA) to find enriched pathways between two groups
@@ -111,7 +127,7 @@ Output files:
       
 visualize_desc = """
 -----------------------------------
-Step 5 - Visualize
+Step 6 - Visualize
 -----------------------------------
 
 Perform a variety of visualizations for the expression data and resulting networks can be created.
