@@ -1,8 +1,10 @@
-### 1.4.2
+### 1.5.0
 - Removed some hard-coded values in volcano plot, so now all user-defined values should work properly
 - Changed the labels on the volcano plot to make it more clear which groups were which
 - When visualizing heatmaps previously, an error would occur if the metadata header was not in 
 the correct format. This has now been fixed.
+- The "sisana compare means" command has been changed to just "sisana compare". Likewise, the "sisana compare survival" command is now just "sisana survival"
+- Added a "sisana summarize" command, which summarizes the analysis the user performs in an html format.
 
 ### 1.4.1
 - Changed the listed files in the log output files to all not have "./" at the beginning of their paths, just for consistency's sake
