@@ -1,0 +1,7 @@
+# Use the following if you wish to perform gene set enrichment analysis (GSEA)
+# example: sisana compare gsea params.yml
+gsea:
+  genefile: # Path to file (.rnk format, which is two column, tab delimited, no header) containing the genes and test statistics to do enrichment on
+  gmtfile: # Path to the gene set file in gmt format
+  geneset: # The gene set type used for gmtfile
+  outdir: # The directory to save the output to
