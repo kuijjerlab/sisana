@@ -1,5 +1,5 @@
 # Use the following if you wish to perform either a t-test, Mann-Whitney test, or their paired alternatives
-# example: sisana compare means params.yml
+# example: sisana compare params.yml
 means: 
   datafile: # Path to the data file (either expression, indegree, or outdegree)
   mapfile: # Path to the mapping file, which maps sample name to sample group
