@@ -64,6 +64,11 @@ def calc_tt(group1, group2, ttype):
     from scipy.stats import mannwhitneyu 
     # group1 = [1,2,5,7,9, 8,6,5,3]
     # group2 = [2,3,6,8,9, 9,9,8,7]
+    # print("entered compare.py")
+
+    # print(group1)
+    # print(group2)
+    # sys.exit(0)
     
     if ttype != 'mw':
         if ttype == 'tt':
