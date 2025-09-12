@@ -11,6 +11,8 @@ from sisana.docs import create_log_file
 import os 
 import pandas as pd
 import sys
+import re
+import glob
 import numpy as np
 from pathlib import Path
 
@@ -42,25 +44,28 @@ def cli():
     subparsers = parser.add_subparsers(title='Subcommands', dest='command')
     pre = subparsers.add_parser('preprocess', help='Filters expression data for parameters (e.g. genes) that are only present in at least m samples. Also filters each input file so they have the same genes and TFs across each', epilog=sisana.docs.preprocess_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
     gen = subparsers.add_parser('generate', help='Generates PANDA and LIONESS networks', epilog=sisana.docs.generate_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
+    comb = subparsers.add_parser('combine', help='Combines indegree and outdegree files ran in batches', epilog=sisana.docs.combine_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
     ext = subparsers.add_parser('extract', help='Extract edges connected to specified TFs/genes', epilog=sisana.docs.extract_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
     comp = subparsers.add_parser('compare', help='Compare networks between sample groups', epilog=sisana.docs.compare_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
+    comp = subparsers.add_parser('survival', help='Compare survival times of individuals between sample groups', epilog=sisana.docs.survival_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
     gsea = subparsers.add_parser('gsea', help='Perform gene set enrichment analysis between sample groups', epilog=sisana.docs.gsea_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
     vis = subparsers.add_parser('visualize', help='Visualize the calculated degrees of each sample group', epilog=sisana.docs.visualize_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
     summ = subparsers.add_parser('summarize', aliases=["summarise"], help='Summarize the outputs in an html file', epilog=sisana.docs.summarize_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
 
     # options for preprocess subcommand
-    # pre.add_argument("-t", "--template", action="store_true", help='Flag for whether to show the path to the template file')
     pre.add_argument("params", type=str, help='Path to yaml file containing the parameters to use')
         
     # options for generate subcommand    
     gen.add_argument("params", type=str, help='Path to yaml file containing the parameters to use')
+
+    # options for generate subcommand    
+    comb.add_argument("params", type=str, help='Path to yaml file containing the parameters to use')
 
     # options for extract subcommand
     ext.add_argument("extractchoice", type=str, choices = ["genes", "tfs"], help="Do you want to extract specific gene or TF edges?")   
     ext.add_argument("params", type=str, help='Path to yaml file containing the parameters to use')
 
     # options for compare subcommand
-    comp.add_argument("compchoice", type=str, choices = ["means", "survival"], help="The type of comparison to do")   
     comp.add_argument("params", type=str, help='Path to yaml file containing the parameters to use')
 
     # options for gsea subcommand    
@@ -154,7 +159,10 @@ def cli():
                 modeProcess="intersection",
                 with_header=True)
 
-            panda_obj.save_panda_results(panda_output_location, old_compatible=False)     
+            panda_res = panda_obj.export_panda_results
+            panda_res = panda_res.sort_values(by=["tf", "gene"])
+            panda_res.to_csv(panda_output_location, sep=" ", index=False)
+            # panda_obj.save_panda_results(panda_output_location, old_compatible=False)     
             
             print("Now calculating PANDA degrees...")
             calculate_panda_degree(inputfile=panda_output_location)
@@ -176,6 +184,8 @@ def cli():
 
             # Run Lioness on a subset of samples if specified in the params file, otherwise run on all samples
             if generate_params['start'] is not None:
+                
+                
                 Lioness(panda_obj, 
                            computing=generate_params['compute'], 
                            precision="double",
@@ -184,6 +194,7 @@ def cli():
                            save_fmt="npy",
                            start=generate_params['start'],
                            end=generate_params['end'])
+                        #    export_filename=f"./output/network/lioness_networks_samples_{generate_params['start']}_to_{generate_params['end']}.npy")
             else:
                 Lioness(panda_obj, 
                            computing=generate_params['compute'], 
@@ -191,7 +202,7 @@ def cli():
                            ncores=generate_params['ncores'], 
                            save_dir=lioness_full_path.parent, 
                            save_fmt="npy")
-            
+
             # Rename the default name of the lioness output file, which is not an option of the current Lioness NetZooPy cli
             os.rename(os.path.join(lioness_full_path.parent, "lioness.npy"), lionesspath_new_path)
 
@@ -215,8 +226,11 @@ def cli():
             # print(lion_transformed.head(n=20))        
             
             # print("LIONESS network with transformed edge values saved to " + os.path.join(params['generate']['outdir'], "lioness_transformed_edges.npy"))
-                        
-            pickle_path = './tmp/lioness.pickle'
+            if generate_params['start'] is not None:
+                pickle_path = f"./tmp/lioness_samples_{generate_params['start']}_to_{generate_params['end']}.pickle"
+            else:
+                pickle_path = './tmp/lioness.pickle'
+                
             convert_lion_to_pickle(panda_output_location,
                                 liondf,
                                 "npy", 
@@ -233,13 +247,14 @@ def cli():
             if generate_params['start'] is not None:
                 lioness_indeg_filename = f"lioness_indegree_samples_{generate_params['start']}_to_{generate_params['end']}"
                 lioness_outdeg_filename = f"lioness_outdegree_samples_{generate_params['start']}_to_{generate_params['end']}"
+                Path(f"./tmp/lioness_samples_{generate_params['start']}_to_{generate_params['end']}_indegree.csv").rename(f"{Path(lioness_full_path).parent}/{lioness_indeg_filename}.csv")
+                Path(f"./tmp/lioness_samples_{generate_params['start']}_to_{generate_params['end']}_outdegree.csv").rename(f"{Path(lioness_full_path).parent}/{lioness_outdeg_filename}.csv")
+
             else:
                 lioness_indeg_filename = f"lioness_indegree"
                 lioness_outdeg_filename = f"lioness_outdegree"
-
-            # Move degree files from .tmp to user's output location
-            Path("./tmp/lioness_indegree.csv").rename(f"{Path(lioness_full_path).parent}/{lioness_indeg_filename}.csv")
-            Path("./tmp/lioness_outdegree.csv").rename(f"{Path(lioness_full_path).parent}/{lioness_outdeg_filename}.csv")
+                Path("./tmp/lioness_indegree.csv").rename(f"{Path(lioness_full_path).parent}/{lioness_indeg_filename}.csv")
+                Path("./tmp/lioness_outdegree.csv").rename(f"{Path(lioness_full_path).parent}/{lioness_outdeg_filename}.csv")
 
             print(f"LIONESS network saved to {str(lionesspath_new_path)}")
             print(f"LIONESS degrees saved to:")
@@ -263,60 +278,128 @@ def cli():
                         outfiles)
         
     ########################################################
-    # 3) Compare between sample groups
+    # 2.5) (OPTIONAL) Combine the multiple degree files into a single
+    #      output file. Only used samples were "batched" when creating
+    #      the single-sample networks in the previous step
     ########################################################
-
-    if args.command == 'compare':
+    if args.command == 'combine':
         
-        if args.compchoice == "means":     
-            compare_means_params = params['compare']['means']
-   
-            outfiles = compare_bw_groups(datafile=compare_means_params["datafile"], 
-                                        mapfile=compare_means_params["mapfile"], 
-                                        datatype=compare_means_params["datatype"], 
-                                        groups=compare_means_params["groups"],
-                                        testtype=compare_means_params["testtype"], 
-                                        filetype=compare_means_params["filetype"],
-                                        rankby_col=compare_means_params["rankby"],
-                                        outdir=compare_means_params["outdir"])
-            
-            create_log_file("compare_means", 
-                compare_means_params, 
-                outfiles)
+        combine_params = params['combine']
+        degree_dir_path = str(Path(combine_params['degree_dir']))
+
+        indeg_dataframes = []
+        indeg_filenames = []
+        outdeg_dataframes = []
+        outdeg_filenames = []
+        numpy_dataframes = []
+        numpy_filenames = []
+
+        with open('./tmp/samples.txt', 'r') as file:
+            samplist = file.readlines()
+            # Optional: Remove newline characters
+            samplist = [samp.strip() for samp in samplist] 
+        print(samplist)
+
+        panda_file = pd.read_csv(combine_params['panda_file'], sep = " ")
+        panda_file["edge"] = panda_file["tf"] + "-" + panda_file["gene"] 
+        panda_file.index = panda_file["edge"]
+    
+        # with open("./tmp/samples.txt", "w") as f:
+        #     for samp in expdf.columns:
+        #         f.write(col + "\n")
+
+        def _get_batched_files(df_list: list, fname_list: list, regex: str, ext: str):
+
+            if ext == "csv":
+                for file in glob.glob(f"{degree_dir_path}/{regex}"):
+                    df = pd.read_csv(file, index_col=0)
+                    # print(df)
+                    df_list.append(df)
+                    fname_list.append(file)
+            else:
+                for file in glob.glob(f"{degree_dir_path}/{regex}"):
+                    noext = file[:-4]
+                    startsamp, endsamp = int(noext.split("_")[-3]), int(noext.split("_")[-1])
+
+                    numpy_file = np.load(file)
+                    # print(len(numpy_file))
+                    data = pd.DataFrame(numpy_file)
+
+                    data.columns = samplist[startsamp-1:endsamp]
+                    data.index = panda_file.index
+          
+                    # print(panda_file)
+                    # print(data)
+                    df_list.append(data)
+                    fname_list.append(file)
+
+        # Combine the degree files automatically, since they are relatively small.
+        # Combining networks may run into memory issues, so it's optional
+        _get_batched_files(outdeg_dataframes, outdeg_filenames, "lioness_outdegree_samples_*_to_*.csv", "csv")
+        _get_batched_files(indeg_dataframes, indeg_filenames, "lioness_indegree_samples_*_to_*.csv", "csv")    
         
-        if args.compchoice == "survival":     
-            compare_survival_params = params['compare']['survival']
+        combined_indeg = pd.concat(indeg_dataframes, axis=1)
+        combined_outdeg = pd.concat(outdeg_dataframes, axis=1)
+        
+        combined_indeg.to_csv(f"{degree_dir_path}/lioness_indegree.csv", index=True)
+        combined_outdeg.to_csv(f"{degree_dir_path}/lioness_outdegree.csv", index=True)
 
-            try:
-                outfiles = survival_analysis(metadata=compare_survival_params["metadata"],
-                                filetype=compare_survival_params["filetype"], 
-                                sampgroup_colname=compare_survival_params["sampgroup_colname"],
-                                alivestatus_colname=compare_survival_params["alivestatus_colname"],
-                                days_colname=compare_survival_params["days_colname"],
-                                groups=compare_survival_params["groups"],
-                                outdir=compare_survival_params["outdir"],
-                                appendname=compare_survival_params["appendname"])
-            except:
-                outfiles = survival_analysis(metadata=compare_survival_params["metadata"],
-                                filetype=compare_survival_params["filetype"], 
-                                sampgroup_colname=compare_survival_params["sampgroup_colname"],
-                                alivestatus_colname=compare_survival_params["alivestatus_colname"],
-                                days_colname=compare_survival_params["days_colname"],
-                                groups=compare_survival_params["groups"],
-                                outdir=compare_survival_params["outdir"])
-            fnames, pval, sig = outfiles[0], outfiles[1], outfiles[2] 
+        print(f"File created: {degree_dir_path}/lioness_indegree.csv")
+        print(f"File created: {degree_dir_path}/lioness_outdegree.csv")
+                    
+        if combine_params["delete_intermediate_files"] == True:
+            [os.remove(file) for file in indeg_filenames]
+            [os.remove(file) for file in outdeg_filenames]
+                    
+        if params["combine"]["networks"] == True:
+            _get_batched_files(numpy_dataframes, numpy_filenames, "lioness_networks_samples_*_to_*.npy", "npy")                  
+            combined_nw = pd.concat(numpy_dataframes, axis=1)
             
-            pval_str = f"p-value: {pval}"
-            sig_str = f"significant?: {sig}"
+            # print(combined_nw)
             
-            extra_info = []
-            extra_info.append(pval_str)
-            extra_info.append(sig_str)
+            pickle_path = './tmp/lioness.pickle'
+            np_path = f"{degree_dir_path}/lioness_network.npy"
             
-            create_log_file("compare_survival", 
-                compare_survival_params, 
-                [fnames], extra_info)
+            with open("./tmp/combined_samples.txt", "w") as f:
+                for col in combined_nw.columns:
+                    f.write(col + "\n")
 
+            convert_lion_to_pickle(combine_params['panda_file'],
+                        combined_nw,
+                        "npy", 
+                        './tmp/combined_samples.txt',  
+                        pickle_path)
+            
+            combined_nw = combined_nw.to_numpy()
+            np.save(np_path, combined_nw)
+            
+            # combined_nw.to_csv(np_path, index=True)
+            print(f"File created: {np_path}")
+                
+            if combine_params["delete_intermediate_files"] == True:
+                [os.remove(file) for file in numpy_filenames]
+                        
+
+    ########################################################
+    # 3) Compare degree (or expression) between sample groups
+    ########################################################
+        
+    if args.command == "compare":     
+        compare_means_params = params['compare']
+
+        outfiles = compare_bw_groups(datafile=compare_means_params["datafile"], 
+                                    mapfile=compare_means_params["mapfile"], 
+                                    datatype=compare_means_params["datatype"], 
+                                    groups=compare_means_params["groups"],
+                                    testtype=compare_means_params["testtype"], 
+                                    filetype=compare_means_params["filetype"],
+                                    rankby_col=compare_means_params["rankby"],
+                                    outdir=compare_means_params["outdir"])
+        
+        create_log_file("compare_means", 
+            compare_means_params, 
+            outfiles)
+    
     ########################################################
     # 4) Perform gene set enrichment analysis
     ########################################################   
@@ -432,7 +515,7 @@ def cli():
                 outfiles)  
             
     ########################################################
-    # 6) Optional, extract edges that connect to specific TFs/genes
+    # (Optional) Extract edges that connect to specific TFs/genes
     ########################################################
 
     if args.command == 'extract':
@@ -448,3 +531,39 @@ def cli():
                 extract_params, 
                 [outfiles])  
         
+    ########################################################
+    # (Optional) Perform survival analysis
+    ########################################################
+   
+    if args.command == "survival":     
+        compare_survival_params = params['survival']
+
+        try:
+            outfiles = survival_analysis(metadata=compare_survival_params["metadata"],
+                            filetype=compare_survival_params["filetype"], 
+                            sampgroup_colname=compare_survival_params["sampgroup_colname"],
+                            alivestatus_colname=compare_survival_params["alivestatus_colname"],
+                            days_colname=compare_survival_params["days_colname"],
+                            groups=compare_survival_params["groups"],
+                            outdir=compare_survival_params["outdir"],
+                            appendname=compare_survival_params["appendname"])
+        except:
+            outfiles = survival_analysis(metadata=compare_survival_params["metadata"],
+                            filetype=compare_survival_params["filetype"], 
+                            sampgroup_colname=compare_survival_params["sampgroup_colname"],
+                            alivestatus_colname=compare_survival_params["alivestatus_colname"],
+                            days_colname=compare_survival_params["days_colname"],
+                            groups=compare_survival_params["groups"],
+                            outdir=compare_survival_params["outdir"])
+        fnames, pval, sig = outfiles[0], outfiles[1], outfiles[2] 
+        
+        pval_str = f"p-value: {pval}"
+        sig_str = f"significant?: {sig}"
+        
+        extra_info = []
+        extra_info.append(pval_str)
+        extra_info.append(sig_str)
+        
+        create_log_file("compare_survival", 
+            compare_survival_params, 
+            [fnames], extra_info)
