@@ -50,7 +50,7 @@ cd sisana
 
 ## Pipeline overview 
 <p align="center">  
-  <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/sisana_pipeline_overview_v11.png" width="800" />
+  <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/sisana_pipeline_overview_v12.png" width="800" />
 </p>
 
 ## Example input files
