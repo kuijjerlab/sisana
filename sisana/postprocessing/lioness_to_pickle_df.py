@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import argparse
 from .post import files_to_dfs
+import sys
 
 def convert_lion_to_pickle(panda: str, lion: str, type: str, names: str, outfile: str, start: int=None, end: int=None):    
     '''
@@ -11,7 +12,7 @@ def convert_lion_to_pickle(panda: str, lion: str, type: str, names: str, outfile
     Parameters:
     -----------
         - panda: str, Path to panda output file
-        - lion: str, lioness data frame with transformed edge values
+        - lion: str, lioness data frame
         - type: str, file type of lioness file, either npy or txt
         - names: str, File with list of sample names (one per line) in the same order that were supplied for panda/lioness
         - outfile: str, Path to output file in pickle format (e.g. lioness.pickle)
@@ -39,8 +40,7 @@ def convert_lion_to_pickle(panda: str, lion: str, type: str, names: str, outfile
     else:
         lion.columns = samps 
     
-    savefile = outfile
-    lion.to_pickle(savefile)   
+    lion.to_pickle(outfile)   
  
     
     
