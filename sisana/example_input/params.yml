@@ -25,6 +25,17 @@ generate:
   compute: cpu # Whether to use "gpu" or "cpu" for computing LIONESS networks
   ncores: 20 # Number of cores to use for calculating LIONESS networks. Must be less than or equal to the number of samples.
   lionessfilepath: ./output/network/lioness_networks.npy # Path to the lioness output file to be created. Must have a .npy extension.
+  start: # (optional) An integer. To start from nth sample. The background is always what is used for PANDA and stays the same. If this value and the end value are not specified, then all samples will be used.
+  end: # (optional) An integer. To end at nth sample. Must be used when a value for "start" is specified. The background is always what is used for PANDA and stays the same
+
+# Stage 2.5 (OPTIONAL): Combine the multiple degree files into a single output file. Only used samples were "batched" when creating the single-sample 
+#                       networks in the previous step (i.e. when "start" and "end" are set) and multiple "sets" of networks were created
+# example: sisana combine ./example_inputs/params.yml
+combine:
+  degree_dir: ./output/network/
+  panda_file: ./output/network/panda_network.txt
+  networks: True # Flag for whether to also combine the resulting numpy networks from the previous step. Will result in significantly more RAM usage.
+  delete_intermediate_files: True # Flag for whether to delete the intermediate output files from when specifying the start and end samples
 
 #######################################################################################################################################
 ##### Note: Now we will begin running the downstream analysis on a superset of the samples used for stages 1 and 2. This superset
@@ -32,36 +43,33 @@ generate:
 ##### tutorial. For your data, you will continue using the files produced by stage 1 and stage 2 in your analysis.
 #######################################################################################################################################
 
-# Stage 3: Compare experimental groups. Specify which comparison type to perform in the "sisana compare <comparison_type>" command.
-compare:
+# Stage 3: Compare experimental groups. Specify which comparison type to perform in the "sisana compare" command.
+# Use the following if you wish to perform either a t-test, Mann-Whitney test, or their paired alternatives
+# example: sisana compare ./example_inputs/params.yml
+compare: 
+  datafile: ./example_inputs/lioness_df_indegree_3_decimal_places_subset_200_LumALumB_samps.csv # Path to the data file (either expression, indegree, or outdegree)
+  mapfile: ./example_inputs/BRCA_TCGA_200_LumA_LumB_samps_mapping_w_header.csv # Path to the mapping file, which maps sample name (column 1) to sample group (column 2). Assumes file has a header.
+  datatype: degree # The type of data being used (example: "expression" or "degree")
+  groups:  # Names of the two groups (from the second column of mapfile) to be compared. The second group listed will be used as the numerator in the fold change calulation.
+    - LumA
+    - LumB
+  testtype: mw # Type of comparison to perform, either "tt" for Student's t-test, "mw" for Mann-Whitney U, "paired_tt", or "wilcoxon"
+  filetype: csv # The type of data file ("csv" or "txt" or "tsv") being used
+  rankby: mediandiff # The statistic to rank the .rnk output file by for GSEA. Choices are "mediandiff", "mwu", "neglogp", and "meandiff"
+  outdir: ./output/compare_means/ # The directory to save the output to
 
-  # Use the following if you wish to perform either a t-test, Mann-Whitney test, or their paired alternatives on the 
-  # in-degree, out-degree, or expression data.
-  # example: sisana compare means ./example_inputs/params.yml
-  means: 
-    datafile: ./example_inputs/lioness_df_indegree_3_decimal_places_subset_200_LumALumB_samps.csv # Path to the data file (either expression, in-degree, or out-degree)
-    mapfile: ./example_inputs/BRCA_TCGA_200_LumA_LumB_samps_mapping_w_header.csv # Path to the mapping file, which maps sample name (column 1) to sample group (column 2). Header must be in the format of "name,group".
-    datatype: degree # The type of data being used (example: "expression" or "degree")
-    groups:  # Names of the two groups (from the second column of mapfile) to be compared. The difference in means/medians will be calculated by doing group2-group1
-      - LumA
-      - LumB
-    testtype: mw # Type of comparison to perform, either "tt" for Student's t-test, "mw" for Mann-Whitney U, "paired_tt", or "wilcoxon"
-    filetype: csv # The type of data file ("csv" or "txt" or "tsv") being used
-    rankby: mediandiff # The statistic to rank the .rnk output file by for GSEA. Choices are "mediandiff" (the difference in medians between groups), "mwu" (the Mann-Whitney U test statistic), "neglogp" (-log(p-value)), and "meandiff" (the difference in means between groups)
-    outdir: ./output/compare_means/ # The directory to save the output to
-
-  # Use the following if you wish to perform a survival analysis between two sample groups
-  # example: sisana compare survival ./example_inputs/params.yml
-  survival:
-    metadata: ./example_inputs/BRCA_TCGA_200_LumA_LumB_samps_survival_data.csv # Path to file ("csv" or "txt") containing the survival status and mapping to groups. Must contain a column describing the survival status (see alivestatus_colname param)
-    filetype: csv # Type of file for metadata. Enter "csv" or "txt" for this.
-    sampgroup_colname: PAM50_subtype # Name of column containing sample group names
-    alivestatus_colname: Survival_status(False_equals_alive) # Name of column that contains the status of the individual. Must contain True/False values only, where True = dead (event occurred) and False = alive.
-    days_colname: days_to_death_or_last_followup # Name of column containing either the number of days an individual survived or the number of days to the last follow up.
-    groups: # The names of the two groups (from the metadata file) to compare
-      - LumA
-      - LumB
-    outdir: ./output/survival/ # The directory to save the output to
+# Use the following if you wish to perform a survival analysis between two sample groups
+# example: sisana survival ./example_inputs/params.yml
+survival:
+  metadata: ./example_inputs/BRCA_TCGA_200_LumA_LumB_samps_survival_data.csv # Path to file ("csv" or "txt") containing the survival status and mapping to groups. Must contain a column describing the survival status (see alivestatus_colname param)
+  filetype: csv # Type of file, used to indicate the delimiter to use for metadata. Enter "csv" or "txt" for this.
+  sampgroup_colname: PAM50_subtype # Name of column containing sample group names
+  alivestatus_colname: Survival_status(False_equals_alive) # Name of column that contains the status of the individual. Must contain True/False values only, where True = dead (event occurred) and False = alive.
+  days_colname: days_to_death_or_last_followup # Name of column containing either the number of days an individual survived or the number of days to the last follow up.
+  groups: # The names of the two groups (from the metadata file) to compare
+    - LumA
+    - LumB
+  outdir: ./output/survival/ # The directory to save the output to
 
 # Stage 4: Perform gene set enrichment analysis (GSEA). Must run "sisana compare means" first
 # example: sisana gsea ./example_inputs/params.yml
