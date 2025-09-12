@@ -151,6 +151,39 @@ def summarize(logdir: str):
             </div>
         """  
     else: preprocess_results = ""
+    
+    if 'survival' in all_analyses_info_dict: 
+        survival_add_info = {key: val for i in all_analyses_info_dict["survival"]["Additional information"] for key, val in i.items()}    
+        survival_results = f"""
+        <div>
+            <h2>Survival plot</h2>
+            <p>Your groups differ in survival with a p-value of <strong>{survival_add_info["p-value"]:.3f}</strong>. This indicates that there is a <strong>{survival_add_info["significant?"]}</strong> difference in the survival between the groups.</p>
+            {_create_img_tag(all_analyses_info_dict["survival"])}
+        </div>
+        """   
+    else: survival_results = ""
+
+    if 'heatmap' in all_analyses_info_dict: 
+        
+        if all_analyses_info_dict["heatmap"]["input"]["column_cluster"] == False:
+            colclust_str = "Column clustering was not performed."
+        else:
+            colclust_str = "Column clustering was performed."
+            
+        if all_analyses_info_dict["heatmap"]["input"]["row_cluster"] == False:
+            rowclust_str = "Row clustering was not performed."
+        else:
+            rowclust_str = "Row clustering was performed."            
+            
+        heatmap_results = f"""
+            <div>
+                <h2>Quantity plot</h2>
+                <p>Below you will find the heatmap created for visualizing the genes. {colclust_str} {rowclust_str}</p>
+                {_create_img_tag(all_analyses_info_dict["heatmap"])}
+            </div>
+        """  
+    else: heatmap_results = ""    
+    
 
     if 'quantity' in all_analyses_info_dict: 
         quantity_results = f"""
@@ -175,17 +208,6 @@ def summarize(logdir: str):
             </div>
         """ 
     else: volcano_results = ""
-       
-    if 'survival' in all_analyses_info_dict: 
-        survival_add_info = {key: val for i in all_analyses_info_dict["survival"]["Additional information"] for key, val in i.items()}    
-        survival_results = f"""
-        <div>
-            <h2>Survival plot</h2>
-            <p>Your groups differ in survival with a p-value of <strong>{survival_add_info["p-value"]:.3f}</strong>. This indicates that there is a <strong>{survival_add_info["significant?"]}</strong> difference in the survival between the groups.</p>
-            {_create_img_tag(all_analyses_info_dict["survival"])}
-        </div>
-        """   
-    else: survival_results = ""
         
     if 'gsea' in all_analyses_info_dict: 
         gsea_results = f"""
@@ -214,9 +236,10 @@ def summarize(logdir: str):
         <body>
             <h1>SiSaNA results</h1>
             {preprocess_results}
+            {survival_results}
             {quantity_results}
             {volcano_results}
-            {survival_results}
+            {heatmap_results}
             {gsea_results}
         </body>
         </html>
