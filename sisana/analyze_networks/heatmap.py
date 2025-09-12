@@ -135,17 +135,13 @@ def plot_heatmap(datafile: str, filetype: str, statsfile: str, metadata: str, ge
     filtered_z.to_csv(out_filtered_z_path)    
     ordered_df.to_csv(os.path.join(outdir, f"{prefix}_filtered_data_file_for_heatmap_genes_ordered_df.csv"))   
 
-
     # Split the z-score data frame per sample group
     zdfs = {}
     all_input_samps = ordered_df.columns
     
     for i in groups:
         zdfs[i] = ordered_df[sampdict[i]]
-        
-    print(zdfs)
-    sys.exit(0)
-    
+            
     # fig, axs =plt.subplots(nrows = 1, ncols = len(groups), constrained_layout = True)
     fig, axs = plt.subplots(nrows = 1, ncols = len(groups), figsize=(len(groups) * 2, 2), width_ratios=[len(df.columns) for df in zdfs.values()], constrained_layout = True)
         
