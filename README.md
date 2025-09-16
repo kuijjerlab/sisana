@@ -93,7 +93,6 @@ Three files, one for each of the three filtered input files.
 <br />
 
 
-
 ## Step 2: Reconstruction and analysis of networks
 This second SiSaNA stage, "generate", uses the PANDA and LIONESS algorithms of netZooPy to reconstruct gene regulatory networks. Documentation for netZooPy can be found at https://github.com/netZoo/netZooPy/tree/master. It then performs basic analyses of these networks by calculating in-degree of genes (also called gene targeting scores) and out-degree of transcription factors (TFs).
 
@@ -107,6 +106,7 @@ sisana generate ./example_inputs/params.yml
 2. lioness.pickle, which is the same thing, just serialized to make reading into python quicker
 3. A file containing the calculated indegree and another file with the outdegree of each gene and transcription factor, respectively.
 <br />
+<br />
 
 
 ## Step 3: Comparing two experimental groups
@@ -118,6 +118,8 @@ To compare the values between two groups in order to identify differentially exp
 sisana compare ./example_inputs/params.yml
 ```
 <br />
+<br />
+
 
 ## Step 4: Survival analysis
 For performing survival analyses, you can use a command like this:
@@ -129,6 +131,8 @@ sisana survival ./example_inputs/params.yml
   <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/LumA_v_LumB_survival_plot.png" width="500" />
 </p>
 <br />
+<br />
+
 
 ## Step 5: Performing gene set enrichment analysis 
 "sisana gsea" is used to perform gene set enrichment analysis (GSEA) to identify pathways that are differentially regulated based on the gene targeting scores. It uses the ranks of genes found in the previous step (sisana compare) as input.
@@ -143,6 +147,8 @@ sisana gsea ./example_inputs/params.yml
   <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/comparison_mw_between_LumA_LumB_degree_ranked_mediandiff_GSEA_Hallmarks_basic_enrichment_dotplot.png" width="500" />
 </p>
 <br />
+<br />
+
 
 ## Step 6: Visualization of results
 The "visualize" command allows you to visualize the results of your analysis on publication-ready figures. There are multiple types of visualization you can perform, including generating volcano plots...
@@ -168,6 +174,9 @@ sisana visualize heatmap ./example_inputs/params.yml
 <p align="center">
   <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/TCGA_200_LumA_LumB_samps_heatmap.png" width="500" />
 </p> 
+<br />
+<br />
+
 
 ## Step 7: Summarize your results
 The final stage of SiSaNA, "summarize", takes all the created images and outputs them in a single html file for convenience. This can then be opened in a web browser. Please note that this subcommand will automatically attempt to look in the ./log_files/ directory for the required input files. If running from another directory, you will need to provide the path to to the log_files directory manually.

@@ -1,0 +1,12 @@
+# Use the following if you wish to perform a survival analysis between two sample groups
+# example: sisana survival -p params.yml
+survival:
+  metadata: # Path to mapping file ("csv" or "txt") that maps samples to groups. Must also contain a column describing the survival status (see alivestatus_colname param)
+  filetype: # Type of file, used to indicate the delimiter to use for metadata. Enter "csv" or "txt" for this.
+  sampgroup_colname: # Name of column containing sample group names
+  alivestatus_colname: # Name of column that contains the status of the individual. Must contain True/False values only, where True = dead (event occurred) and False = alive.
+  days_colname: # Name of column containing either the number of days an individual survived or the number of days to the last follow up.
+  groups: # The names of the two groups (from the metadata file) to compare
+    - # Group 1 (ensure there is a space after the '-')
+    - # Group 2 (ensure there is a space after the '-')
+  outdir: # The directory to save the output to
