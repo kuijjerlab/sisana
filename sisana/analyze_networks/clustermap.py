@@ -168,11 +168,11 @@ def plot_clustermap(datafile: str, filetype: str, metadata: str, genelist: str, 
     #                          dendrogram_ratio=0.05, vmin = -2, vmax = 2, cmap = matplotlib.colormaps['RdBu_r'], cbar_kws=cbar_kws)
     cbar_pos = (1, 0.5, 0.02, 0.25)
 
-    print(row_cluster)
-    print(df_for_plotting.head(10))
+    # print(row_cluster)
+    # print(df_for_plotting.head(10))
     df_for_plotting = df_for_plotting.reindex(genes_to_plot).reset_index()
     df_for_plotting = df_for_plotting.set_index('index')
-    print(df_for_plotting.head(10))
+    # print(df_for_plotting.head(10))
     
     sns_plot = sns.clustermap(df_for_plotting, col_colors=col_colors_df, z_score=None, row_cluster=row_cluster, col_cluster=column_cluster, 
                               dendrogram_ratio=0.05, vmin = -2, vmax = 2, cmap = matplotlib.colormaps['RdBu_r'], cbar_kws=cbar_kws, cbar_pos=cbar_pos,
@@ -198,34 +198,54 @@ def plot_clustermap(datafile: str, filetype: str, metadata: str, genelist: str, 
     #     legend_counter += 1
     
     # Calulate x axis position of legends based on how many categories are given by the user
-    x_positions = [x/(len(category_label_columns)+1) for x in range(len(category_label_columns)+2) if x != 0 and x != len(category_label_columns)+1]
+    if len(category_label_columns) == 1:
+        legend_x_positions = [0.5]
+    else:
+        legend_x_positions = [x/(len(category_label_columns)+1) for x in range(len(category_label_columns)+2) if x != 0 and x != len(category_label_columns)+1]
+        legend_x_positions = [0.2, 0.4, 0.6, 0.85]    
 
-    x_positions = [0.2, 0.4, 0.6, 0.85]
 
+    print(samp_meta_file[category_label_columns[0]].unique())
     for label in samp_meta_file[category_label_columns[0]].unique(): #group1, group2, etc
+        # print(label)
+        # sys.exit(0)
         sns_plot.ax_col_dendrogram.bar(0, 0, color=luts[category_label_columns[0]][label], label=label, linewidth=0)
-        legend = sns_plot.ax_col_dendrogram.legend(title=category_label_columns[0], loc="upper center", ncol=2, bbox_to_anchor=(x_positions[0], 1.05), bbox_transform=plt.gcf().transFigure)
+        legend = sns_plot.ax_col_dendrogram.legend(title=category_label_columns[0], loc="upper center", ncol=2, bbox_to_anchor=(legend_x_positions[0], 1.05), bbox_transform=plt.gcf().transFigure, fontsize='large')
+        
+        
+        legend.set_title(category_label_columns[0], prop={"size": 20})  # Set title font size   
+        for text in legend.get_texts():
+            text.set_fontsize(20)  # Set font size for legend text
     
     xpos_counter = 1
     # legend_counter = 1
+    print(category_label_columns[1:len(category_label_columns)])
+    # sys.exit(0)
     for category in category_label_columns[1:len(category_label_columns)]: # group, Grade, etc.
         artists = []
         for label in samp_meta_file[category].unique(): #group1, group2, etc
             x = sns_plot.ax_col_dendrogram.bar(0, 0, color=luts[category][label], label=label, linewidth=0)
             artists.append(x)
-        legend = plt.legend(artists, samp_meta_file[category].unique(), loc="upper center", ncol=2, title=category, bbox_to_anchor=(x_positions[xpos_counter], 1.05), bbox_transform=plt.gcf().transFigure)
+        legend = plt.legend(artists, samp_meta_file[category].unique(), loc="upper center", ncol=2, title=category, bbox_to_anchor=(legend_x_positions[xpos_counter], 1.05), bbox_transform=plt.gcf().transFigure, fontsize=1000)
 
         plt.gca().add_artist(legend)
         
         xpos_counter += 1
-            
+    
+    # Change color bar label size
+    sns_plot.cax.set_ylabel('z-score', fontsize=20)  # Set your desired title and fontsize
+
+    # Change color bar tick label size
+    for tick in sns_plot.cax.get_yticklabels():  # Access the y-tick labels of the color bar
+        tick.set_fontsize(16)  # Set font size for y-tick labels (color bar)
+        
     outname = os.path.join(outdir, f"{prefix}_heatmap.png")
     sns_plot.savefig(outname, dpi = 600, bbox_inches='tight')
     
     outfiles = [outname, out_filtered_z_path]
     
     print(f"\nFile created: {outname}")
-    print(f"\nFile created: {out_filtered_z_path}")
+    print(f"File created: {out_filtered_z_path}")
 
     # Save the order of rows if desired, so that the same order can be applied on another dataset
     if row_cluster:
@@ -235,7 +255,7 @@ def plot_clustermap(datafile: str, filetype: str, metadata: str, genelist: str, 
         with open(row_cluster_order_outname, "w") as outfile:
             outfile.write("\n".join(row_cluster_order))
 
-        print(f"\nFile created: {row_cluster_order_outname}")
+        print(f"File created: {row_cluster_order_outname}")
         outfiles.append(row_cluster_order_outname)
     
     return(outfiles)
