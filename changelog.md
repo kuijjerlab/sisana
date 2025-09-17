@@ -1,3 +1,6 @@
+### 1.5.1
+- Added the example Jupyter notebook for clustering
+
 ### 1.5.0
 - Added option to run LIONESS on a subset of samples for batching of the "generate" step. PANDA is still ran on all samples, so the same background is used for each batch. 
 - Removed some hard-coded values in volcano plot, so now all user-defined values should work properly
