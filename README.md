@@ -179,13 +179,9 @@ sisana visualize heatmap ./example_inputs/params.yml
 
 
 ## Step 7: Summarize your results
-The final stage of SiSaNA, "summarize", takes all the created images and outputs them in a single html file for convenience. This can then be opened in a web browser. Please note that this subcommand will automatically attempt to look in the ./log_files/ directory for the required input files. If running from another directory, you will need to provide the path to to the log_files directory manually.
+The final stage of SiSaNA, "summarize", takes all the created images and outputs them in a single html file for convenience. This can then be opened in a web browser. Please note that you must be in the directory containing the log_files subdirectory for this command to work.
 ```
 sisana summarize
-
-OR
-
-sisana summarize </path/to/log_files/>
 ```
 <p align="center">
   <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/example_html_output.png" width="750" />
