@@ -186,10 +186,15 @@ def summarize(logdir: str):
     
 
     if 'quantity' in all_analyses_info_dict: 
+        if all_analyses_info_dict["quantity"]["input"]["numgenes"] is not None:
+            ngenes_string = f"The {all_analyses_info_dict['quantity']['input']['numgenes']} top genes were plotted."
+        else:
+            ngenes_string = ""
+            
         quantity_results = f"""
             <div>
                 <h2>Quantity plot</h2>
-                <p>Below you will find the {all_analyses_info_dict["quantity"]["input"]["plottype"]} created for visualizing the {all_analyses_info_dict["quantity"]["input"]["yaxisname"]}.</p>
+                <p>Below you will find the {all_analyses_info_dict["quantity"]["input"]["plottype"]} created for visualizing the {all_analyses_info_dict["quantity"]["input"]["yaxisname"]}. {ngenes_string}</p>
                 {_create_img_tag(all_analyses_info_dict["quantity"])}
             </div>
         """  
@@ -213,7 +218,7 @@ def summarize(logdir: str):
         gsea_results = f"""
         <div>
             <h2>GSEA results</h2>
-            <p>Below you will find the top pathways that are enriched between the two sample groups.</p>
+            <p>Below you will find the top pathways that are enriched between the two sample groups. The GMT file used for generating these results was {Path(all_analyses_info_dict["gsea"]["input"]["gmtfile"]).name}.</p>
             {_create_img_tag(all_analyses_info_dict["gsea"])}
         </div>
         """   
