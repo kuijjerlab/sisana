@@ -46,6 +46,9 @@ def plot_clustermap(datafile: str, filetype: str, metadata: str, genelist: str, 
         - list of the output file paths
     '''
     
+    if len(category_label_columns) > 1:
+        raise Exception("Error: At this time, SiSaNA only supports using one 'metadata' type for coloring of sample groups. Please change your params.yml file to only include one value for the 'category_label_columns' parameter.")
+    
     if filetype == "csv":
         datadf = pd.read_csv(datafile, index_col = 0)
     elif filetype == "txt" or filetype == "tsv":
@@ -168,11 +171,8 @@ def plot_clustermap(datafile: str, filetype: str, metadata: str, genelist: str, 
     #                          dendrogram_ratio=0.05, vmin = -2, vmax = 2, cmap = matplotlib.colormaps['RdBu_r'], cbar_kws=cbar_kws)
     cbar_pos = (1, 0.5, 0.02, 0.25)
 
-    # print(row_cluster)
-    # print(df_for_plotting.head(10))
     df_for_plotting = df_for_plotting.reindex(genes_to_plot).reset_index()
     df_for_plotting = df_for_plotting.set_index('index')
-    # print(df_for_plotting.head(10))
     
     sns_plot = sns.clustermap(df_for_plotting, col_colors=col_colors_df, z_score=None, row_cluster=row_cluster, col_cluster=column_cluster, 
                               dendrogram_ratio=0.05, vmin = -2, vmax = 2, cmap = matplotlib.colormaps['RdBu_r'], cbar_kws=cbar_kws, cbar_pos=cbar_pos,
@@ -180,8 +180,14 @@ def plot_clustermap(datafile: str, filetype: str, metadata: str, genelist: str, 
 
     # Add legend to plot
     from matplotlib.patches import Patch
-    
-    #### I have absolutely no idea why the following code doesn't visualize properly. 
+
+    # Calulate x axis position of legends based on how many categories are given by the user
+    if len(category_label_columns) == 1:
+        legend_x_positions = [0.5]
+    else:
+        legend_x_positions = [x/(len(category_label_columns)+1) for x in range(len(category_label_columns)+2) if x != 0 and x != len(category_label_columns)+1]
+
+    # #### I have absolutely no idea why the following code doesn't visualize properly. 
     # legend_counter = 0
     # for category in category_label_columns: # group, Grade, etc.
     #     xx = []
@@ -197,41 +203,31 @@ def plot_clustermap(datafile: str, filetype: str, metadata: str, genelist: str, 
     #     plt.gca().add_artist(legend)
     #     legend_counter += 1
     
-    # Calulate x axis position of legends based on how many categories are given by the user
-    if len(category_label_columns) == 1:
-        legend_x_positions = [0.5]
-    else:
-        legend_x_positions = [x/(len(category_label_columns)+1) for x in range(len(category_label_columns)+2) if x != 0 and x != len(category_label_columns)+1]
-        legend_x_positions = [0.2, 0.4, 0.6, 0.85]    
-
-
-    print(samp_meta_file[category_label_columns[0]].unique())
     for label in samp_meta_file[category_label_columns[0]].unique(): #group1, group2, etc
         # print(label)
         # sys.exit(0)
         sns_plot.ax_col_dendrogram.bar(0, 0, color=luts[category_label_columns[0]][label], label=label, linewidth=0)
-        legend = sns_plot.ax_col_dendrogram.legend(title=category_label_columns[0], loc="upper center", ncol=2, bbox_to_anchor=(legend_x_positions[0], 1.05), bbox_transform=plt.gcf().transFigure, fontsize='large')
-        
-        
-        legend.set_title(category_label_columns[0], prop={"size": 20})  # Set title font size   
-        for text in legend.get_texts():
+        legend1 = sns_plot.ax_col_dendrogram.legend(title=category_label_columns[0], loc="upper center", ncol=2, bbox_to_anchor=(legend_x_positions[0], 1.05), bbox_transform=plt.gcf().transFigure, fontsize='large')
+        legend1.set_title(category_label_columns[0], prop={"size": 20})  # Set title font size   
+        for text in legend1.get_texts():
             text.set_fontsize(20)  # Set font size for legend text
-    
-    xpos_counter = 1
-    # legend_counter = 1
-    print(category_label_columns[1:len(category_label_columns)])
-    # sys.exit(0)
-    for category in category_label_columns[1:len(category_label_columns)]: # group, Grade, etc.
-        artists = []
-        for label in samp_meta_file[category].unique(): #group1, group2, etc
-            x = sns_plot.ax_col_dendrogram.bar(0, 0, color=luts[category][label], label=label, linewidth=0)
-            artists.append(x)
-        legend = plt.legend(artists, samp_meta_file[category].unique(), loc="upper center", ncol=2, title=category, bbox_to_anchor=(legend_x_positions[xpos_counter], 1.05), bbox_transform=plt.gcf().transFigure, fontsize=1000)
 
-        plt.gca().add_artist(legend)
-        
-        xpos_counter += 1
-    
+    # The following code was just for testing purposes, leaving here for now in case we want to try implementing this 
+    # into a loop at a later point.
+    # for label in samp_meta_file[category_label_columns[1]].unique(): #group1, group2, etc            
+    #     sns_plot.ax_col_dendrogram.bar(0, 0, color=luts[category_label_columns[1]][label], label=label, linewidth=0)      
+    #     legend2 = sns_plot.ax_col_dendrogram.legend(title=category_label_columns[1], loc="upper center", ncol=2, bbox_to_anchor=(legend_x_positions[1], 1.05), bbox_transform=plt.gcf().transFigure, fontsize='large')
+    #     legend2.set_title(category_label_columns[1], prop={"size": 20})  # Set title font size   
+    #     for text in legend2.get_texts():
+    #         text.set_fontsize(20)  # Set font size for legend text        
+
+    # for label in samp_meta_file[category_label_columns[2]].unique(): #group1, group2, etc                        
+    #     sns_plot.ax_col_dendrogram.bar(0, 0, color=luts[category_label_columns[2]][label], label=label, linewidth=0)      
+    #     legend3 = sns_plot.ax_col_dendrogram.legend(title=category_label_columns[2], loc="upper center", ncol=2, bbox_to_anchor=(legend_x_positions[2], 1.05), bbox_transform=plt.gcf().transFigure, fontsize='large')
+    #     legend3.set_title(category_label_columns[2], prop={"size": 20})  # Set title font size   
+    #     for text in legend3.get_texts():
+    #         text.set_fontsize(20)  # Set font size for legend text            
+
     # Change color bar label size
     sns_plot.cax.set_ylabel('z-score', fontsize=20)  # Set your desired title and fontsize
 
@@ -240,7 +236,7 @@ def plot_clustermap(datafile: str, filetype: str, metadata: str, genelist: str, 
         tick.set_fontsize(16)  # Set font size for y-tick labels (color bar)
         
     outname = os.path.join(outdir, f"{prefix}_heatmap.png")
-    sns_plot.savefig(outname, dpi = 600, bbox_inches='tight')
+    sns_plot.savefig(outname, dpi = 300, bbox_inches='tight')
     
     outfiles = [outname, out_filtered_z_path]
     
