@@ -32,6 +32,7 @@ def fetch_files():
             'https://zenodo.org/records/15552563/files/params.yml',
             'https://zenodo.org/records/15552563/files/quantity_plot_genes.txt',
             'https://zenodo.org/records/15552563/files/volcano_plot_genes.txt',
+            'https://zenodo.org/records/17144098/files/clustering_template.ipynb',
             
             ### From the SPONGE Zenodo repo:
             'https://zenodo.org/records/13628785/files/ppi_prior_2024.tsv',
