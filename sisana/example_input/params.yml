@@ -28,7 +28,7 @@ generate:
   start: # (optional) An integer. To start from nth sample. The background is always what is used for PANDA and stays the same. If this value and the end value are not specified, then all samples will be used.
   end: # (optional) An integer. To end at nth sample. Must be used when a value for "start" is specified. The background is always what is used for PANDA and stays the same
 
-# Stage 2.5 (OPTIONAL): Combine the multiple degree files into a single output file. Only used samples were "batched" when creating the single-sample 
+# Stage 2.5 (OPTIONAL): Combine the multiple degree files into a single output file. Only use if samples were "batched" when creating the single-sample 
 #                       networks in the previous step (i.e. when "start" and "end" are set) and multiple "sets" of networks were created
 # example: sisana combine ./example_inputs/params.yml
 combine:
