@@ -165,11 +165,12 @@ def plot_clustermap(datafile: str, filetype: str, metadata: str, genelist: str, 
     df_for_plotting, col_color_dict, luts = _create_column_colors(ordered_df, samp_meta_file, category_label_columns, category_column_colors)
 
     col_colors_df = pd.DataFrame.from_dict(col_color_dict)
-    cbar_kws={"orientation": "vertical", "pad":0.02, "use_gridspec":True, "label":'z-score', "ticks":[-2,-1,0,1,2]}
+    
+    cbar_kws={"orientation": "horizontal", "pad":0.02, "use_gridspec":True, "ticks":[-2,-1,0,1,2]}
     # kws = dict(cbar_kws=dict(label='z-score',, orientation='horizontal', center=0))
     # sns_plot = sns.clustermap(df_for_plotting, col_colors=col_colors_df, z_score=0, method='ward', row_cluster=True, col_cluster=False, 
     #                          dendrogram_ratio=0.05, vmin = -2, vmax = 2, cmap = matplotlib.colormaps['RdBu_r'], cbar_kws=cbar_kws)
-    cbar_pos = (1, 0.5, 0.02, 0.25)
+    cbar_pos = (0.6, 0.985, 0.2, 0.02) # left, bottom, width, height
 
     df_for_plotting = df_for_plotting.reindex(genes_to_plot).reset_index()
     df_for_plotting = df_for_plotting.set_index('index')
@@ -183,7 +184,7 @@ def plot_clustermap(datafile: str, filetype: str, metadata: str, genelist: str, 
 
     # Calulate x axis position of legends based on how many categories are given by the user
     if len(category_label_columns) == 1:
-        legend_x_positions = [0.5]
+        legend_x_positions = [0.33]
     else:
         legend_x_positions = [x/(len(category_label_columns)+1) for x in range(len(category_label_columns)+2) if x != 0 and x != len(category_label_columns)+1]
 
@@ -229,7 +230,11 @@ def plot_clustermap(datafile: str, filetype: str, metadata: str, genelist: str, 
     #         text.set_fontsize(20)  # Set font size for legend text            
 
     # Change color bar label size
-    sns_plot.cax.set_ylabel('z-score', fontsize=20)  # Set your desired title and fontsize
+    sns_plot.cax.set_title('z-score', fontsize=18)  # Set your desired title and fontsize
+
+    # Remove y axis label
+    sns_plot.ax_heatmap.set_ylabel('') 
+    sns_plot.ax_row_dendrogram.set_ylabel('')
 
     # Change color bar tick label size
     for tick in sns_plot.cax.get_yticklabels():  # Access the y-tick labels of the color bar

@@ -83,11 +83,34 @@ def perform_gsea(genefile: str, gmtfile: str, geneset: str, outdir: str):
                 cutoff=0.25, 
                 show_ring=False)
 
+
+    # Modify the legend to make the text more visible
+    legend = ax.get_legend()
+    ax.get_legend().get_title().set_fontsize(20)
+    
+    legend.get_title().set_multialignment('center') 
+    for text in legend.get_texts():
+        text.set_fontsize(16) 
+        
+    original_cbar = ax.collections[0].colorbar 
+
+    # Make a copy of the cbar that gsea provides, since there seems to be an issue with trying to modify it directly
+    new_cbar = plt.colorbar(ax.collections[0], ax=ax, shrink=0.25, aspect=10, pad=0.01)
+    original_cbar.remove() # Remove the original cbar 
+    new_cbar.ax.tick_params(labelsize=18) 
+    new_cbar.ax.title.set_bbox(dict(facecolor='none', edgecolor='none', boxstyle='round,pad=0')) 
+    new_cbar.ax.set_position([0.96, 0.08, 0.04, 0.9])  # [left, bottom, width, height]
+     
+    # Create a text box for the title of the cbar. There was an issue with modifying the ubilt-in cbar title, where
+    # you would specify the y-value for the location but the title wouldn't move, so this is the workaround for it
+    ax.text(3.7, 6.5, "Log10(FDR)", fontsize=22, 
+        bbox=dict(facecolor='white', edgecolor='none', alpha = 0, boxstyle='round,pad=0.5'),
+        ha='center', va='center')
+     
     dotplot_name = os.path.join(outdir, f"{file_basename}_GSEA_{geneset}_basic_enrichment_dotplot.png")
     ax.figure.savefig(dotplot_name, bbox_inches = "tight")
 
     print("\nDone!")
-    
     print(f"Files created:\n{res_file_name}\n{gsea_plot_name}\n{dotplot_name}\n")
 
     return([res_file_name, gsea_plot_name, dotplot_name])
