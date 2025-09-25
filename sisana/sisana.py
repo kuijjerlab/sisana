@@ -47,7 +47,7 @@ def cli():
     comb = subparsers.add_parser('combine', help='Combines indegree and outdegree files ran in batches', epilog=sisana.docs.combine_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
     ext = subparsers.add_parser('extract', help='Extract edges connected to specified TFs/genes', epilog=sisana.docs.extract_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
     comp = subparsers.add_parser('compare', help='Compare networks between sample groups', epilog=sisana.docs.compare_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
-    comp = subparsers.add_parser('survival', help='Compare survival times of individuals between sample groups', epilog=sisana.docs.survival_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
+    surv = subparsers.add_parser('survival', help='Compare survival times of individuals between sample groups', epilog=sisana.docs.survival_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
     gsea = subparsers.add_parser('gsea', help='Perform gene set enrichment analysis between sample groups', epilog=sisana.docs.gsea_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
     vis = subparsers.add_parser('visualize', help='Visualize the calculated degrees of each sample group', epilog=sisana.docs.visualize_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
     summ = subparsers.add_parser('summarize', aliases=["summarise"], help='Summarize the outputs in an html file', epilog=sisana.docs.summarize_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -68,6 +68,9 @@ def cli():
     # options for compare subcommand
     comp.add_argument("params", type=str, help='Path to yaml file containing the parameters to use')
 
+    # options for survival subcommand
+    surv.add_argument("params", type=str, help='Path to yaml file containing the parameters to use')
+
     # options for gsea subcommand    
     gsea.add_argument("params", type=str, help='Path to yaml file containing the parameters to use')
 
@@ -79,6 +82,8 @@ def cli():
     summ.add_argument("logdir", nargs='?', type=str, default="./log_files/", help='Path to the directory containing the previously made log files')
 
     args = parser.parse_args()
+      
+
       
     # If user wants example files, retrieve them from their installed paths
     if args.example:
