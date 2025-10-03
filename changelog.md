@@ -2,6 +2,7 @@
 - Added the example Jupyter notebook for clustering
 - Fixed the spacing issue and the text size of the legend in the heatmap step. Note that this fix only works when using a single metadata group (e.g. subtype). Two or more metadata types are still not supported at this time.
 - Added the example output results_summarized.html file to the GitHub repo.
+- Fixed the example file downloads so it downloads from the Kuijjer Lab repo 
 
 ### 1.5.0
 - Added option to run LIONESS on a subset of samples for batching of the "generate" step. PANDA is still ran on all samples, so the same background is used for each batch. 
