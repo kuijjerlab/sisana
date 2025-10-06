@@ -39,6 +39,7 @@ def cli():
     parser = argparse.ArgumentParser(prog='sisana.py', description=DESCRIPTION, epilog=EPILOG)    
     parser.add_argument('-e', '--example', action='store_true', help='Flag; Copies the example input files into a directory called "./example_inputs"')    
     parser.add_argument('-s', '--setAndForget', action='store_true', help='Flag; Will attempt to run ALL STEPS of SiSaNA at once. Warning: This requires a very well-formatted params file and should not be used by first-time users. Most users will want to run each of the steps individually."')    
+    parser.add_argument('-v', '--version', action='store_true', help='Prints the version of SiSaNA currently being used.')
 
     # Add subcommands
     subparsers = parser.add_subparsers(title='Subcommands', dest='command')
@@ -92,7 +93,13 @@ def cli():
         fetch_files()
         print("Example input files have been created in ./example_inputs/")
         sys.exit(0)
-    
+        
+    # If user wants version info
+    if args.version:
+        print(f"SiSaNA version: {sisana.__version__}")
+        sys.exit(0)
+
+    # If user has already performed analysis and wants an HTML summary file
     if args.command != "summarize" and args.command != "summarise": 
         params = yaml.load(open(args.params), Loader=yaml.FullLoader)
     else:
