@@ -47,7 +47,7 @@ def plot_volcano(statsfile: str, diffcol: str, adjpcol: str, adjpvalthreshold: s
     plt.figure(figsize=(6, 6), dpi = 1200) 
     plt.scatter(x=stats[diffcol],y=stats[adjpcol].apply(lambda x:-np.log10(x)), s=1)
 
-    down = stats[(stats[diffcol] <= xaxisthreshold) & (stats[adjpcol] <= adjpvalthreshold)]
+    down = stats[(stats[diffcol] <= -1*xaxisthreshold) & (stats[adjpcol] <= adjpvalthreshold)]
     alldown = stats[stats[diffcol] < 0] # df of all genes that are down-regulated (not necessarily significant)
     up = stats[(stats[diffcol] > xaxisthreshold) & (stats[adjpcol] <= adjpvalthreshold)]
     allup = stats[stats[diffcol] > 0] # df of all genes that are up-regulated (not necessarily significant)
