@@ -2,6 +2,7 @@
 - Fixed a bug where the incorrect genes are labeled on a volcano plot
 - Fixed a bug where SiSaNA required the "preprocess" parameter to be defined in the params.yml file, even if the user was not running the preprocess step.
 - Added functionality for the modeProcess argument from netZooPy
+- Added functionality for specifiying whether to run PANDA on CPU or GPU
 
 ### 1.5.1
 - Added the example Jupyter notebook for clustering
