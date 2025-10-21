@@ -1,3 +1,8 @@
+### 1.5.2 (not yet released)
+- Fixed a bug where the incorrect genes are labeled on a volcano plot
+- Fixed a bug where SiSaNA required the "preprocess" parameter to be defined in the params.yml file, even if the user was not running the preprocess step.
+- Added functionality for the modeProcess argument from netZooPy
+
 ### 1.5.1
 - Added the example Jupyter notebook for clustering
 - Fixed the spacing issue and the text size of the legend in the heatmap step. Note that this fix only works when using a single metadata group (e.g. subtype). Two or more metadata types are still not supported at this time.
