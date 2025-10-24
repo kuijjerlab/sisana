@@ -19,10 +19,11 @@ generate:
   motif: ./example_inputs/motif_prior_names_2024.tsv # Path to the motif prior file. This file is generated with SPONGE and for most users, this file can be used for their analysis as well.
   ppi: ./example_inputs/ppi_prior_2024.tsv # Path to the PPI prior file. This file is generated with SPONGE and for most users, this file can be used for their analysis as well.
   method: lioness # Which method to use, either "panda" to run just PANDA or "lioness", which runs PANDA first, then LIONESS
+  modeProcess: intersection # From netZooPy documentation: "legacy" refers to the processing mode in netZooPy<=0.5. "union" n of all TFs and genes across priors and fills the missing genes in the priors with zeros. "intersection"  input genes and TFs across priors and removes the missing TFs/genes.
   pandafilepath: ./output/network/panda_network.txt # Path to the PANDA output file to be created. Must have a .txt extension.
+  compute: cpu # Whether to use "gpu" or "cpu" for computing networks
 
   # The following commands are used if you specified "lioness" for the "method" arg
-  compute: cpu # Whether to use "gpu" or "cpu" for computing LIONESS networks
   ncores: 20 # Number of cores to use for calculating LIONESS networks. Must be less than or equal to the number of samples.
   lionessfilepath: ./output/network/lioness_networks.npy # Path to the lioness output file to be created. Must have a .npy extension.
   start: # (optional) An integer. To start from nth sample. The background is always what is used for PANDA and stays the same. If this value and the end value are not specified, then all samples will be used.

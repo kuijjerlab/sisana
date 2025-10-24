@@ -4,6 +4,7 @@ from netZooPy.panda.panda import Panda
 from netZooPy.lioness.lioness import Lioness
 from sisana.preprocessing import preprocess_data
 from sisana.postprocessing import convert_lion_to_pickle, extract_tfs_genes
+# from sisana.postprocessing import convert_lion_to_pickle, extract_tfs_genes, quantile_normalize_edges
 from sisana.analyze_networks import calculate_panda_degree, calculate_lioness_degree, compare_bw_groups, survival_analysis, perform_gsea, plot_volcano, plot_expression_degree, plot_heatmap, plot_clustermap, summarize
 from sisana.example_input import find_example_paths, fetch_files
 import sisana.docs
@@ -113,8 +114,10 @@ def cli():
     # 1) Preprocess the data
     ########################################################
 
-    preprocess_params = params['preprocess']
+    
     if args.command == 'preprocess':
+        
+        preprocess_params = params['preprocess']
         
         # # Save the order of the sample names to their own file, then export the data frame without a header, since that is what is required for CLI version of PANDA
         # expdf = pd.read_csv(preprocess_params['exp_file'], sep='\t', index_col=0)
@@ -158,17 +161,18 @@ def cli():
 
             pandapath = Path(panda_output_location)
             if str(pandapath)[-4:] != ".txt":
-                raise Exception("Error: Panda output file must have a .txt extension. Please edit your pandafilepath variable in your params file")
+                raise Exception("Error: Panda output file must have a .txt extension. Please edit your pandafilepath variable in your params file.")
             os.makedirs(pandapath.parent, exist_ok=True)
             
             panda_obj = Panda(expression_file=generate_params['exp'], 
                 motif_file=generate_params['motif'], 
                 ppi_file=generate_params['ppi'], 
+                computing=generate_params['compute'],
+                modeProcess=generate_params['modeProcess'],
                 save_tmp=False, 
                 remove_missing=False, 
                 keep_expression_matrix=True, 
                 save_memory=False,
-                modeProcess="intersection",
                 with_header=True)
 
             panda_res = panda_obj.export_panda_results
@@ -579,3 +583,13 @@ def cli():
         create_log_file("compare_survival", 
             compare_survival_params, 
             [fnames], extra_info)
+
+    ########################################################
+    # (Optional) Quantile normalize edges, then calculate degree
+    ########################################################
+    if args.command == "quantnorm":     
+        qnorm_params = params['quantnorm']
+
+        outfiles = quantile_normalize_edges(infile=qnorm_params["metadata"],
+                        filetype=qnorm_params["filetype"], 
+                        outdir=qnorm_params["outdir"])
