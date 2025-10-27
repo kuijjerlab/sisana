@@ -3,6 +3,7 @@
 - Fixed a bug where SiSaNA required the "preprocess" parameter to be defined in the params.yml file, even if the user was not running the preprocess step.
 - Added functionality for the modeProcess argument from netZooPy
 - Added functionality for specifiying whether to run PANDA on CPU or GPU
+- Added a hotstart option for the lioness_to_pickle_df.py step, so that if the user has an issue in the "sisana generate" step after network reconstruction, they can jump back into the analysis without needing to re-reconstruct all the networks
 
 ### 1.5.1
 - Added the example Jupyter notebook for clustering
