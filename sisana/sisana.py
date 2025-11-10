@@ -2,6 +2,7 @@ import yaml
 import argparse
 from netZooPy.panda.panda import Panda
 from netZooPy.lioness.lioness import Lioness
+from sisana.default_parameters import get_default_params 
 from sisana.preprocessing import preprocess_data
 from sisana.postprocessing import convert_lion_to_pickle, extract_tfs_genes
 # from sisana.postprocessing import convert_lion_to_pickle, extract_tfs_genes, quantile_normalize_edges
@@ -85,9 +86,7 @@ def cli():
 
     args = parser.parse_args()
       
-
-      
-    # If user wants example files, retrieve them from their installed paths
+    # If user wants example files, retrieve them from Zenodo
     if args.example:
         
         print("Downloading example input files from Zenodo. Please wait...")
@@ -109,15 +108,70 @@ def cli():
 
     # Create output for temp files if one does not already exist
     os.makedirs('./tmp/', exist_ok=True)
+    
+    # Create a dictionary with the default parameters for each step
+    def_params = get_default_params()
+                
+    def update_if_different(default_dict, user_dict):
+        """    
+        Description:
+            Updates the default_dict with the user-defined parameters from user_dict,
+            then returns the resulting default_dict
+                    
+        Parameters:
+        -----------
+            - default_dict: dict, a dictionary containing the default sisana parameters
+            - user_dict: dict, a dictionary containing the parameters the user defined
+            
+        Returns:
+        -----------
+            -  The default dict, with the default parameters updated if the user has supplied
+               values for those parameters, otherwise the defaults are kept
+        """
+        
+        temp_dict = default_dict
+        
+        for key, source_value in user_dict.items():
+            if key not in default_dict:
+                temp_dict[key] = user_dict[key]
+                
+            if default_dict[key] != user_dict[key]:
+                temp_dict[key] = source_value
+        return temp_dict
+
+    updated_params = {}
+    
+    single_dict_keys = ["preprocess", "generate", "combine", "compare", "survival", "gsea", "extract"]
+    nested_dict_keys = ["volcano", "quantity", "heatmap"]
+
+    for key in single_dict_keys:
+        if key in params:
+            updated_params[key] = update_if_different(def_params[key], params[key])
+    
+    # print("\n")
+    # print(params["visualize"])
+    # print(def_params["visualize"])
+    
+    updated_params["visualize"] = {}
+    for key in nested_dict_keys:
+        if key in params["visualize"]:
+            updated_params["visualize"][key] = update_if_different(def_params["visualize"][key], params["visualize"][key])
+
+    for k,v in updated_params["visualize"].items():
+        print("\n")
+        print(k)
+        for x,y in v.items():
+            print(f"{x}: {y}")    
+        
+    # sys.exit(0)
 
     ########################################################
     # 1) Preprocess the data
     ########################################################
-
     
     if args.command == 'preprocess':
         
-        preprocess_params = params['preprocess']
+        preprocess_params = updated_params['preprocess']
         
         # # Save the order of the sample names to their own file, then export the data frame without a header, since that is what is required for CLI version of PANDA
         # expdf = pd.read_csv(preprocess_params['exp_file'], sep='\t', index_col=0)
@@ -131,7 +185,7 @@ def cli():
         results = preprocess_data(preprocess_params['exp_file'], 
                         preprocess_params['filetype'], 
                         preprocess_params['number'],
-                        preprocess_params['outdir'])    
+                        preprocess_params['outdir'])  
         
         fname, genes_kept, genes_removed = results[0], results[1], results[2] 
             
@@ -150,7 +204,7 @@ def cli():
 
     if args.command == 'generate':
         
-        generate_params = params['generate']
+        generate_params = updated_params['generate']
 
         if generate_params['method'].lower() == 'panda' or generate_params['method'].lower() == 'lioness':
 
@@ -247,6 +301,7 @@ def cli():
             else:
                 pickle_path = './tmp/lioness.pickle'
                 
+            print("\nLIONESS networks created. Now converting results to a .pickle file...")
             convert_lion_to_pickle(panda_output_location,
                                 liondf,
                                 "npy", 
@@ -255,7 +310,7 @@ def cli():
                                 start=generate_params['start'],
                                 end=generate_params['end'])
             
-            print("\nLIONESS networks created. Now calculating LIONESS degrees...")
+            print("\n.pickle file created. Now calculating LIONESS degrees...")
             calculate_lioness_degree(inputfile=pickle_path,
                             datatype="pickle")
             print("LIONESS degrees have now been calculated.")
@@ -300,7 +355,7 @@ def cli():
     ########################################################
     if args.command == 'combine':
         
-        combine_params = params['combine']
+        combine_params = updated_params['combine']
         degree_dir_path = str(Path(combine_params['degree_dir']))
 
         indeg_dataframes = []
@@ -367,7 +422,7 @@ def cli():
             [os.remove(file) for file in indeg_filenames]
             [os.remove(file) for file in outdeg_filenames]
                     
-        if params["combine"]["networks"] == True:
+        if updated_params["combine"]["networks"] == True:
             _get_batched_files(numpy_dataframes, numpy_filenames, "lioness_networks_samples_*_to_*.npy", "npy")                  
             combined_nw = pd.concat(numpy_dataframes, axis=1)
             
@@ -401,7 +456,7 @@ def cli():
     ########################################################
         
     if args.command == "compare":     
-        compare_means_params = params['compare']
+        compare_means_params = updated_params['compare']
 
         outfiles = compare_bw_groups(datafile=compare_means_params["datafile"], 
                                     mapfile=compare_means_params["mapfile"], 
@@ -421,7 +476,7 @@ def cli():
     ########################################################   
         
     if args.command == 'gsea':    
-        gsea_params = params["gsea"]
+        gsea_params = updated_params["gsea"]
         
         outfiles = perform_gsea(genefile=gsea_params["genefile"], 
                         gmtfile=gsea_params["gmtfile"], 
@@ -438,8 +493,9 @@ def cli():
 
     if args.command == "visualize":                  
 
-        if args.plotchoice == "volcano":    
-            volcano_params = params["visualize"]["volcano"]
+        if args.plotchoice == "volcano": 
+
+            volcano_params = updated_params["visualize"]["volcano"]
 
             outfiles, down_gene_count, up_gene_count = plot_volcano(statsfile=volcano_params["statsfile"],
                          diffcol=volcano_params["diffcol"],
@@ -461,7 +517,7 @@ def cli():
                 [outfiles], extra_info_num_genes)
     
         if args.plotchoice == "quantity":   
-            quantity_params = params["visualize"]["quantity"]
+            quantity_params = updated_params["visualize"]["quantity"]
             
             if quantity_params["genelist"] != None:
                 outfiles = plot_expression_degree(datafile=quantity_params["datafile"],
@@ -510,7 +566,7 @@ def cli():
         #                 top=False)  
             
         if args.plotchoice == "heatmap":    
-            heatmap_params = params["visualize"]["heatmap"]
+            heatmap_params = updated_params["visualize"]["heatmap"]
 
             outfiles = plot_clustermap(datafile=heatmap_params["datafile"],
                         filetype=heatmap_params["filetype"], 
@@ -535,7 +591,7 @@ def cli():
     ########################################################
 
     if args.command == 'extract':
-        extract_params = params["extract"]
+        extract_params = updated_params["extract"]
 
         outfiles = extract_tfs_genes(pickle=extract_params["pickle"], 
                          datatype=args.extractchoice, 
@@ -552,7 +608,7 @@ def cli():
     ########################################################
    
     if args.command == "survival":     
-        compare_survival_params = params['survival']
+        compare_survival_params = updated_params['survival']
 
         try:
             outfiles = survival_analysis(metadata=compare_survival_params["metadata"],
@@ -584,12 +640,12 @@ def cli():
             compare_survival_params, 
             [fnames], extra_info)
 
-    ########################################################
-    # (Optional) Quantile normalize edges, then calculate degree
-    ########################################################
-    if args.command == "quantnorm":     
-        qnorm_params = params['quantnorm']
+    # ########################################################
+    # # (Optional) Quantile normalize edges, then calculate degree
+    # ########################################################
+    # if args.command == "quantnorm":     
+    #     qnorm_params = updated_params['quantnorm']
 
-        outfiles = quantile_normalize_edges(infile=qnorm_params["metadata"],
-                        filetype=qnorm_params["filetype"], 
-                        outdir=qnorm_params["outdir"])
+    #     outfiles = quantile_normalize_edges(infile=qnorm_params["metadata"],
+    #                     filetype=qnorm_params["filetype"], 
+    #                     outdir=qnorm_params["outdir"])
