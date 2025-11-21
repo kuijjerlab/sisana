@@ -157,11 +157,11 @@ def cli():
         if key in params["visualize"]:
             updated_params["visualize"][key] = update_if_different(def_params["visualize"][key], params["visualize"][key])
 
-    for k,v in updated_params["visualize"].items():
-        print("\n")
-        print(k)
-        for x,y in v.items():
-            print(f"{x}: {y}")    
+    # for k,v in updated_params["visualize"].items():
+    #     print("\n")
+    #     print(k)
+    #     for x,y in v.items():
+    #         print(f"{x}: {y}")    
         
     # sys.exit(0)
 
@@ -254,8 +254,6 @@ def cli():
 
             # Run Lioness on a subset of samples if specified in the params file, otherwise run on all samples
             if generate_params['start'] is not None:
-                
-                
                 Lioness(panda_obj, 
                            computing=generate_params['compute'], 
                            precision="double",
@@ -294,7 +292,7 @@ def cli():
             
             # print("Datafile after transformation")
             # print(lion_transformed.head(n=20))        
-            
+                        
             # print("LIONESS network with transformed edge values saved to " + os.path.join(params['generate']['outdir'], "lioness_transformed_edges.npy"))
             if generate_params['start'] is not None:
                 pickle_path = f"./tmp/lioness_samples_{generate_params['start']}_to_{generate_params['end']}.pickle"
@@ -302,17 +300,22 @@ def cli():
                 pickle_path = './tmp/lioness.pickle'
                 
             print("\nLIONESS networks created. Now converting results to a .pickle file...")
-            convert_lion_to_pickle(panda_output_location,
+            
+            # Note that previously convert_lion_to_pickle() did not return anything, but now
+            # that SiSaNA no longer reads in the pickle fil in the calculate_lioness_degree()
+            # function, the re-formatted network is returned by convert_lion_to_pickle() to give
+            # as input to calculate_lioness_degree()
+            liondf = convert_lion_to_pickle(panda_output_location,
                                 liondf,
                                 "npy", 
                                 './tmp/samples.txt',  
                                 pickle_path,
                                 start=generate_params['start'],
                                 end=generate_params['end'])
-            
+                        
             print("\n.pickle file created. Now calculating LIONESS degrees...")
-            calculate_lioness_degree(inputfile=pickle_path,
-                            datatype="pickle")
+            calculate_lioness_degree(nwdf=liondf,
+                                     pickle=pickle_path)
             print("LIONESS degrees have now been calculated.")
             
             if generate_params['start'] is not None:

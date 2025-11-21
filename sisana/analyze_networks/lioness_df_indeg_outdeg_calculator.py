@@ -44,25 +44,24 @@ def calculate_panda_degree(inputfile: str):
     outdeg.to_csv(outdeg_filename, index_label='tf')  
     indeg.to_csv(indeg_filename)
 
-def calculate_lioness_degree(inputfile: str, datatype: str):
+def calculate_lioness_degree(nwdf: str, pickle: str):
     '''
     Description:
         This code calculates the indegree and outdegree of genes and TFs, respectively, for LIONESS networks
      
     Parameters:
     -----------
-        - inputfile: str, Path to lioness file, either in .csv format or the .pickle file created by lioness_to_pickle_df.py script
-        - datatype: str, Type of inputfile, either "csv" or "pickle"
-    
+        - nwdf: str, lioness data frame with TF-gene edges as row names and samples as column names
+        - pickle: The path to the pickled output file 
     Returns:
     -----------
         - Nothing
     '''
 
-    if datatype == 'pickle':
-        nwdf = pd.read_pickle(inputfile)
-    elif datatype == 'csv':
-        nwdf = pd.read_csv(inputfile, index_col='TF-target')       
+    # if datatype == 'pickle':
+    #     nwdf = pd.read_pickle(inputfile)
+    # elif datatype == 'csv':
+    #     nwdf = pd.read_csv(inputfile, index_col='TF-target')       
     
     # Separate the row names to be two different columns, TF and Target
     nwdf = nwdf.rename_axis("TF").reset_index()
@@ -85,11 +84,9 @@ def calculate_lioness_degree(inputfile: str, datatype: str):
     outdeg.index = newind
     
     # format file names and output
-    file_path_and_stem = os.path.splitext(inputfile)[0]
+    file_path_and_stem = os.path.splitext(pickle)[0]
     outdeg_filename =  f"{file_path_and_stem}_outdegree.csv"
     indeg_filename =  f"{file_path_and_stem}_indegree.csv"
-
-    file_path_and_stem = os.path.splitext(inputfile)[0]
 
     outdeg.to_csv(outdeg_filename, index_label='tf')  
     indeg.to_csv(indeg_filename, index_label='target')

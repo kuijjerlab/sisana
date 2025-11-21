@@ -8,9 +8,9 @@
 # example: sisana preprocess ./example_inputs/params.yml
 preprocess:
   exp_file: ./example_inputs/BRCA_TCGA_20_LumA_LumB_samps_5000_genes_exp.tsv # Path to expression file, which MUST CONTAIN A HEADER
-  filetype: tsv # The type of data file ("csv" or "tsv") being used
-  number: 5 # number of samples a gene must be expressed in
-  outdir: ./output/preprocess # The directory to save the output to
+  filetype: tsv # Default: csv. The type of data file ("csv" or "tsv") being used.
+  number: 5 # Default: 5. The number of samples a gene must be expressed in.
+  outdir: ./output/preprocess # Default: ./output/preprocess. The directory to save the output to.
 
 # Stage 2: Reconstruct networks and calculate degrees
 # example: sisana generate ./example_inputs/params.yml
@@ -76,8 +76,8 @@ survival:
 # example: sisana gsea ./example_inputs/params.yml
 gsea:
   genefile: ./output/compare_means/comparison_mw_between_LumA_LumB_degree_ranked_mediandiff.rnk # Path to file (.rnk format, which is two columns, tab delimited, no header) containing the genes and test statistics to do enrichment on. This file is generated with "sisana compare means"
-  gmtfile: ./example_inputs/Hallmark.v2023.2.Hs.symbols.gmt # Path to the gene set file in gmt format
-  geneset: Hallmarks # The gene set type used for gmtfile. This is just a string that gets added to the output file name, so you can describe the specific version used for your GMT file in this name.
+  gmtfile: ./example_inputs/c2.cp.reactome.v2023.2.Hs.symbols.gmt # Path to the gene set file in gmt format
+  geneset: Reactome # The gene set type used for gmtfile. This is just a string that gets added to the output file name, so you can describe the specific version used for your GMT file in this name.
   outdir: ./output/gsea/ # The directory to save the output to
 
 # Stage 4: Visualize the differences between experimental groups. Specify which visualization to perform with "sisana visualize <visualization_type>" command

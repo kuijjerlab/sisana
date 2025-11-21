@@ -107,10 +107,13 @@ def perform_gsea(genefile: str, gmtfile: str, geneset: str, outdir: str):
         bbox=dict(facecolor='white', edgecolor='none', alpha = 0, boxstyle='round,pad=0.5'),
         ha='center', va='center')
      
-    dotplot_name = os.path.join(outdir, f"{file_basename}_GSEA_{geneset}_basic_enrichment_dotplot.png")
-    ax.figure.savefig(dotplot_name, bbox_inches = "tight")
+    dotplot_name_png = os.path.join(outdir, f"{file_basename}_GSEA_{geneset}_basic_enrichment_dotplot.png")
+    dotplot_name_pdf = os.path.join(outdir, f"{file_basename}_GSEA_{geneset}_basic_enrichment_dotplot.pdf")
+    ax.figure.savefig(dotplot_name_png, bbox_inches = "tight")
+    ax.figure.savefig(dotplot_name_pdf, bbox_inches = "tight")
 
     print("\nDone!")
-    print(f"Files created:\n{res_file_name}\n{gsea_plot_name}\n{dotplot_name}\n")
+    print(f"Files created:\n{res_file_name}\n{gsea_plot_name}\n{dotplot_name_png}\n")
+    print(f"Files created:\n{res_file_name}\n{gsea_plot_name}\n{dotplot_name_pdf}\n")
 
-    return([res_file_name, gsea_plot_name, dotplot_name])
+    return([res_file_name, gsea_plot_name, dotplot_name_png])
