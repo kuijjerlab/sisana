@@ -21,7 +21,7 @@ def convert_lion_to_pickle(panda: str, lion: str, type: str, names: str, outfile
         
     Returns:
     -----------
-        - Nothing
+        - Formatted lioness data frame
     '''
     # Create data frames from input files
     pan = pd.read_csv(panda, sep = " ", engine = "python")
@@ -42,5 +42,6 @@ def convert_lion_to_pickle(panda: str, lion: str, type: str, names: str, outfile
     
     lion.to_pickle(outfile)   
  
+    return(lion)
     
     
