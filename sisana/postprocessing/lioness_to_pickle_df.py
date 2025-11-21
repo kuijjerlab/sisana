@@ -2,7 +2,6 @@
 import numpy as np
 import pandas as pd
 import argparse
-import sys
 
 def convert_lion_to_pickle(panda: str, lion: str, type: str, names: str, outfile: str, start: int=None, end: int=None, hotstart: bool=False):    
     '''
@@ -20,7 +19,7 @@ def convert_lion_to_pickle(panda: str, lion: str, type: str, names: str, outfile
         
     Returns:
     -----------
-        - Nothing
+        - Data frame in LIONESS format, with rows as edges and columns as samples
     '''
     
     # Create data frames from input files
@@ -41,8 +40,11 @@ def convert_lion_to_pickle(panda: str, lion: str, type: str, names: str, outfile
         lion.columns = samps 
     
     lion.to_pickle(outfile)   
+    
+    return(lion)
  
 # For hot-starting in case of crashing, so the user does not need to reconstruct all the networks again
+# Note that this is just a temporary fix and will be better-implemented in the future.
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()    
     parser.add_argument('-p', '--panda', help='Path to panda output file')    
