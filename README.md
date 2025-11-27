@@ -1,7 +1,5 @@
 # SiSaNA - Single Sample Network Analysis
 
-SiSaNA is a command line tool that utiliizes the PANDA and LIONESS algorithms from the netZooPy module to generate single sample regulatory networks. Using SiSaNA, users can easily calculate in- and out-degree for each of the reconstructed networks. Additionally, SiSaNA can compare the expression/degree between groups of interest, including performing statistical tests, visualizing the results (volcano plots, boxplots, violin plots, and heatmaps), and compare the survival between groups. All this is accomplished via the command line, with little to no prior programming experience required. 
-
 **Note: The steps below are for the basic use of SiSaNA. Additional functionalities are still under development.**
 
 ## Table of contents
@@ -19,6 +17,21 @@ SiSaNA is a command line tool that utiliizes the PANDA and LIONESS algorithms fr
   - [Step 5: Performing gene set enrichment analysis](#step-5-performing-gene-set-enrichment-analysis)
   - [Step 6: Visualization of results](#step-6-visualization-of-results)
   - [Step 7: Summarize your results](#step-7-summarize-your-results)
+
+## What is SiSaNA? 
+SiSaNA is a command line tool that utiliizes the PANDA and LIONESS algorithms from the netZooPy module to generate single sample regulatory networks. Using SiSaNA, users can easily calculate in- and out-degree for each of the reconstructed networks. Additionally, SiSaNA can compare the expression/degree between groups of interest, including performing statistical tests, visualizing the results (volcano plots, boxplots, violin plots, and heatmaps), and compare the survival between groups. All this is accomplished via the command line, with little to no prior programming experience required. 
+
+## What are PANDA and LIONESS?
+PANDA is a tool developed to reconstruct gene regulatory networks from bulk input data (such as RNA-Seq data). It uses a message passing approach, along with protein-protein interaction data and prior regulatory knowledge information to refine a single network that reflects the regulatory landscape of the input samples. LIONESS utilizes the PANDA algorithm and iteratively removes one sample (with replacement), then uses PANDA to reconstruct a network with all samples minus one. It then uses differences in the original PANDA network and the newly created network with n-1 samples to reconstruct single-sample regulatory networks.
+
+## How do you interpret the gene regulatory networks?
+These networks consist of two types of nodes: transcription factors (TFs) and genes, with an edge that connects each TF to each gene. The weight (or value) of the edge denotes the likelihood of a TF to regulate that gene. A larger edge weight means a higher likelihood of regulation. 
+
+<p align="center">  
+  <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/network_example.png" width="300" />
+</p>
+
+SiSaNA utilizes the PANDA and LIONESS algorithms from the NetZooPy package to reconstruct single sample gene regulatory networks. These networks consist of two types of nodes: transcription factors (TFs) and genes, with an edge that connects each TF to each gene. The weight (or value) of the edge denotes the likelihood of a TF to regulate that gene. A larger edge weight means a higher likelihood of regulation. 
 
 ## Requirements
  - python v3.9.19 (see installation steps for creating a conda environment with this specific Python version). SiSaNA should work with versions of Python 3.9.0 or greater, but as it has been written and tested on this version, we will use 3.9.19.
