@@ -24,14 +24,16 @@ SiSaNA is a command line tool that utiliizes the PANDA and LIONESS algorithms fr
 ## What are PANDA and LIONESS?
 PANDA is a tool developed to reconstruct gene regulatory networks from bulk input data (such as RNA-Seq data). It uses a message passing approach, along with protein-protein interaction data and prior regulatory knowledge information to refine a single network that reflects the regulatory landscape of the input samples. LIONESS utilizes the PANDA algorithm and iteratively removes one sample (with replacement), then uses PANDA to reconstruct a network with all samples minus one. It then uses differences in the original PANDA network and the newly created network with n-1 samples to reconstruct single-sample regulatory networks.
 
+<p align="center">  
+  <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/panda_lioness_example.png" width="500" />
+</p>
+
 ## How do you interpret the gene regulatory networks?
 These networks consist of two types of nodes: transcription factors (TFs) and genes, with an edge that connects each TF to each gene. The weight (or value) of the edge denotes the likelihood of a TF to regulate that gene. A larger edge weight means a higher likelihood of regulation. 
 
 <p align="center">  
   <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/network_example.png" width="300" />
 </p>
-
-SiSaNA utilizes the PANDA and LIONESS algorithms from the NetZooPy package to reconstruct single sample gene regulatory networks. These networks consist of two types of nodes: transcription factors (TFs) and genes, with an edge that connects each TF to each gene. The weight (or value) of the edge denotes the likelihood of a TF to regulate that gene. A larger edge weight means a higher likelihood of regulation. 
 
 ## Requirements
  - python v3.9.19 (see installation steps for creating a conda environment with this specific Python version). SiSaNA should work with versions of Python 3.9.0 or greater, but as it has been written and tested on this version, we will use 3.9.19.
