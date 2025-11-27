@@ -1,9 +1,15 @@
 # SiSaNA - Single Sample Network Analysis
 
-**Note: The steps below are for the basic use of SiSaNA. Additional functionalities are still under development.**
+<p align="center">  
+  <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/sisana_logo.png" width="300" />
+</p>
 
 ## Table of contents
-- [Requirements](#requirements)
+- [SiSaNA introduction](#sisana-introduction)
+  - [What is SiSaNA?](#what-is-sisana)
+  - [What are PANDA and LIONESS?](#what-are-panda-and-lioness)
+  - [How do you interpret the gene regulatory networks?](#how-do-you-interpret-the-gene-regulatory-networks)
+- [Requirements](#requirements-for-using-sisana)
 - [Installation](#installation)
 - [Before you begin](#before-you-begin)
   - [Example input files](#example-input-files)
@@ -18,11 +24,13 @@
   - [Step 6: Visualization of results](#step-6-visualization-of-results)
   - [Step 7: Summarize your results](#step-7-summarize-your-results)
 
+# SiSaNA introduction
+
 ## What is SiSaNA? 
-SiSaNA is a command line tool that utiliizes the PANDA and LIONESS algorithms from the netZooPy module to generate single sample regulatory networks. Using SiSaNA, users can easily calculate in- and out-degree for each of the reconstructed networks. Additionally, SiSaNA can compare the expression/degree between groups of interest, including performing statistical tests, visualizing the results (volcano plots, boxplots, violin plots, and heatmaps), and compare the survival between groups. All this is accomplished via the command line, with little to no prior programming experience required. 
+SiSaNA is a command line tool that utiliizes the PANDA and LIONESS algorithms from the netZooPy module to reconstruct single sample regulatory networks. Using SiSaNA, users can easily calculate in- and out-degree for each of the reconstructed networks. Additionally, SiSaNA can compare the expression/degree between groups of interest, including performing statistical tests, visualizing the results (volcano plots, boxplots, violin plots, and heatmaps), and compare the survival between groups. All this is accomplished via the command line, with little to no prior programming experience required. 
 
 ## What are PANDA and LIONESS?
-PANDA is a tool developed to reconstruct gene regulatory networks from bulk input data (such as RNA-Seq data). It uses a message passing approach, along with protein-protein interaction data and prior regulatory knowledge information to refine a single network that reflects the regulatory landscape of the input samples. LIONESS utilizes the PANDA algorithm and iteratively removes one sample (with replacement), then uses PANDA to reconstruct a network with all samples minus one. It then uses differences in the original PANDA network and the newly created network with n-1 samples to reconstruct single-sample regulatory networks.
+PANDA is a tool developed to reconstruct gene regulatory networks from bulk input data (such as RNA-Seq data). It uses a message passing approach, along with prior protein-protein interaction data and prior regulatory knowledge information to refine a single network that reflects the regulatory landscape of the input samples. LIONESS utilizes the PANDA algorithm and iteratively removes one sample (with replacement), then uses PANDA to reconstruct a network with all samples minus one. It then uses differences in the original PANDA network and the newly created network with n-1 samples to reconstruct single-sample regulatory networks.
 
 <p align="center">  
   <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/panda_lioness_example.png" width="500" />
@@ -35,7 +43,7 @@ These networks consist of two types of nodes: transcription factors (TFs) and ge
   <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/network_example.png" width="300" />
 </p>
 
-## Requirements
+## Requirements for using SiSaNA
  - python v3.9.19 (see installation steps for creating a conda environment with this specific Python version). SiSaNA should work with versions of Python 3.9.0 or greater, but as it has been written and tested on this version, we will use 3.9.19.
    
 ## Installation
