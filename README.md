@@ -4,6 +4,9 @@
   <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/sisana_logo.png" width="300" />
 </p>
 
+## Read about SiSaNA
+[SiSaNA can currently be found on bioRxiv](https://www.biorxiv.org/content/10.1101/2025.11.06.680212v1)
+
 ## Table of contents
 - [SiSaNA introduction](#sisana-introduction)
   - [What is SiSaNA?](#what-is-sisana)
