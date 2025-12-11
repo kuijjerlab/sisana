@@ -154,7 +154,7 @@ sisana compare ./example_inputs/params.yml
 <br />
 <br />
 
-#### ❓(Ignore this question...) Question 4: Following the comparison of the expression of the two Luminal breast cancer groups (the default setup in the params.yml file), take a look at the output .txt file. What are some of the most differentially expressed genes? 
+#### ❓(Ignore this question...) ~~Question 4: Following the comparison of the expression of the two Luminal breast cancer groups (the default setup in the params.yml file), take a look at the output .txt file. What are some of the most differentially expressed genes?~~
 
 #### ❓Question 5: What are some of the top genes that differ in the amount they are being regulated? 
 
