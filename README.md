@@ -156,7 +156,7 @@ sisana compare ./example_inputs/params.yml
 
 #### ❓(Ignore this question...) Question 4: Following the comparison of the expression of the two Luminal breast cancer groups (the default setup in the params.yml file), take a look at the output .txt file. What are some of the most differentially expressed genes? 
 
-#### ❓Question 5: Do the same comparison as before but for the indegrees this time. 
+#### ❓Question 5: What are some of the top genes that differ in the amount they are being regulated? 
 
 ## Step 4: Survival analysis
 For performing survival analyses, you can use a command like this:
