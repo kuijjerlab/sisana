@@ -91,7 +91,7 @@ These files will be downloaded from [Zenodo](https://zenodo.org/records/17190643
 
 #### ❓Question 1: What is the structure of each of the three input files for SiSaNA's preprocessing step? What do the columns represent in each of the files? 
 
-#### ❓Question 2: How many unique TFs are in the prior motif file? How many unique genes?
+#### ❓Question 2: How many genes are being used as input in the expression file? How many unique TFs are in the prior motif file? How many unique genes in the prior motif file?
 
 ## SiSaNA help documentation
 To view help documentation on which subcommands are available, the following can be used:
