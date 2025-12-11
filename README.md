@@ -176,7 +176,7 @@ sisana survival ./example_inputs/params.yml
 sisana gsea ./example_inputs/params.yml
 ```
 
-#### ❓Question 7: Following running the "sisana gsea" step, what are the three top pathways? Run this step again, but with the Hallmark gene set instead of the Reactome one.
+#### ❓Question 7: Following running the "sisana gsea" step, what are the three top pathways? Run this step again, but with the Reactome gene set instead of the Hallmarks one.
 
 ## Step 6: Visualization of results
 The "visualize" command allows you to visualize the results of your analysis on publication-ready figures. There are multiple types of visualization you can perform, including generating volcano plots...
