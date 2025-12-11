@@ -87,7 +87,7 @@ Example input files can be obtained using the command
 ```
 sisana -e
 ```
-These files will be downloaded from Zenodo (https://zenodo.org/records/15744634) and stored in a directory called "example_inputs". One of these example files is the params.yml file, which can be used as a template and edited for your own data (see next section). Each user-defined parameter in the params.yml file is documented with a comment to explain the function of the parameter. The comments do not need to be removed prior to running SiSaNA. The files in this example_inputs directory can be used in the commands listed down below.
+These files will be downloaded from [Zenodo](https://zenodo.org/records/17190643) and stored in a directory called "example_inputs". One of these example files is the params.yml file, which can be used as a template and edited for your own data (see next section). Each user-defined parameter in the params.yml file is documented with a comment to explain the function of the parameter. The comments do not need to be removed prior to running SiSaNA. The files in this example_inputs directory can be used in the commands listed down below.
 
 #### ❓Question 1: What is the structure of each of the three input files for SiSaNA's preprocessing step? What do the columns represent in each of the files? 
 
