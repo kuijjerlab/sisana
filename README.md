@@ -71,7 +71,6 @@ cd sisana
 
 # Before you begin
 
-
 ## Pipeline overview 
 <p align="center">  
   <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/sisana_pipeline_overview_v12.png" width="400" />
@@ -158,6 +157,12 @@ For performing survival analyses, you can use a command like this:
 ```
 sisana survival ./example_inputs/params.yml
 ```
+<br />
+<p align="center">
+  <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/LumA_v_LumB_survival_plot.png" width="500" />
+</p>
+<br />
+<br />
 
 #### ❓Question 6: . Take a look at the output of the "sisana survival" command. Do you know how to interpret this image? Additionally, there is a p-value listed there. Do you think we can conclude based on this p-value that there is a significant difference in the survival of Luminal A vs Luminal B patients?
 
@@ -170,6 +175,13 @@ sisana survival ./example_inputs/params.yml
 ```
 sisana gsea ./example_inputs/params.yml
 ```
+<br />
+
+<p align="center">
+  <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/comparison_mw_between_LumA_LumB_degree_ranked_mediandiff_GSEA_Hallmarks_basic_enrichment_dotplot.png" width="500" />
+</p>
+<br />
+<br />
 
 #### ❓Question 7: Following running the "sisana gsea" step, what are the three top pathways? Run this step again, but with the Hallmark gene set instead of the Reactome one.
 
@@ -178,6 +190,9 @@ The "visualize" command allows you to visualize the results of your analysis on 
 ```
 sisana visualize volcano ./example_inputs/params.yml
 ```
+<p align="center">
+  <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/volcano_plot_adjp_0.25.png" width="500" />
+</p>
 
 #### ❓Question 8. Now let's look at the output of the "sisana visualize volcano" command. What do the dots on the left and right side of the plot represent? Do you recognize any of these genes?
 
@@ -185,13 +200,24 @@ sisana visualize volcano ./example_inputs/params.yml
 ```
 sisana visualize quantity ./example_inputs/params.yml
 ```
+<<<<<<< HEAD
 
 #### ❓Question 9. Take 5 of the top differential indegrees (which you calculated in step 4) and make a box plot for those genes.
+=======
+<p align="center">
+  <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/LumA_LumB_indegree_box_plot.png" width="500" />
+</p>
+>>>>>>> parent of 853eb82 (Removed images for OBiWoW workshop)
 
 ...and creating heatmaps
 ```
 sisana visualize heatmap ./example_inputs/params.yml
 ```
+<p align="center">
+  <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/TCGA_200_LumA_LumB_samps_heatmap.png" width="500" />
+</p> 
+<br />
+<br />
 
 ## Step 7: Summarize your results
 The final stage of SiSaNA, "summarize", takes all the created images and outputs them in a single html file for convenience. This can then be opened in a web browser. Please note that you must be in the directory containing the log_files subdirectory for this command to work.
