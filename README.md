@@ -42,6 +42,8 @@ PANDA is a tool developed to reconstruct gene regulatory networks from bulk inpu
 ## How do you interpret the gene regulatory networks?
 These networks consist of two types of nodes: transcription factors (TFs) and genes, with an edge that connects each TF to each gene. The weight (or value) of the edge denotes the likelihood of a TF to regulate that gene. A larger edge weight means a higher likelihood of regulation. 
 
+SiSaNA will also calculate in-degree and out-degree, where in-degree is the sum of edge weights coming in to a gene while out-degree is the sum of edge weights coming out from a TF. As you may have guessed, a larger in-degree means that, on average, a gene is being more highly regulated in the modeled disease. Meanwhile, a larger out-degree means that, on average, that TF is regulating more genes in the modeled disease.
+
 <p align="center">  
   <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/network_example.png" width="300" />
 </p>
