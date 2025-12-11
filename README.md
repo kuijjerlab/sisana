@@ -4,6 +4,9 @@
   <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/sisana_logo.png" width="300" />
 </p>
 
+## Read about SiSaNA
+[SiSaNA can currently be found on bioRxiv](https://www.biorxiv.org/content/10.1101/2025.11.06.680212v1)
+
 ## Table of contents
 - [SiSaNA introduction](#sisana-introduction)
   - [What is SiSaNA?](#what-is-sisana)
@@ -38,6 +41,8 @@ PANDA is a tool developed to reconstruct gene regulatory networks from bulk inpu
 
 ## How do you interpret the gene regulatory networks?
 These networks consist of two types of nodes: transcription factors (TFs) and genes, with an edge that connects each TF to each gene. The weight (or value) of the edge denotes the likelihood of a TF to regulate that gene. A larger edge weight means a higher likelihood of regulation. 
+
+SiSaNA will also calculate in-degree and out-degree, where in-degree is the sum of edge weights coming in to a gene while out-degree is the sum of edge weights coming out from a TF. As you may have guessed, a larger in-degree means that, on average, a gene is being more highly regulated in the modeled disease. Meanwhile, a larger out-degree means that, on average, that TF is regulating more genes in the modeled disease.
 
 <p align="center">  
   <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/network_example.png" width="300" />
@@ -81,11 +86,11 @@ Example input files can be obtained using the command
 ```
 sisana -e
 ```
-These files will be downloaded from Zenodo (https://zenodo.org/records/15744634) and stored in a directory called "example_inputs". One of these example files is the params.yml file, which can be used as a template and edited for your own data (see next section). Each user-defined parameter in the params.yml file is documented with a comment to explain the function of the parameter. The comments do not need to be removed prior to running SiSaNA. The files in this example_inputs directory can be used in the commands listed down below.
+These files will be downloaded from [Zenodo](https://zenodo.org/records/17190643) and stored in a directory called "example_inputs". One of these example files is the params.yml file, which can be used as a template and edited for your own data (see next section). Each user-defined parameter in the params.yml file is documented with a comment to explain the function of the parameter. The comments do not need to be removed prior to running SiSaNA. The files in this example_inputs directory can be used in the commands listed down below.
 
 #### ❓Question 1: What is the structure of each of the three input files for SiSaNA's preprocessing step? What do the columns represent in each of the files? 
 
-#### ❓Question 2: How many unique TFs are in the prior motif file? How many unique genes?
+#### ❓Question 2: How many genes are being used as input in the expression file? How many unique TFs are in the prior motif file? How many unique genes in the prior motif file?
 
 ## SiSaNA help documentation
 To view help documentation on which subcommands are available, the following can be used:
@@ -148,9 +153,9 @@ sisana compare ./example_inputs/params.yml
 <br />
 <br />
 
-#### ❓Question 4: Following the comparison of the expression of the two Luminal breast cancer groups (the default setup in the params.yml file), take a look at the output .txt file. What are some of the most differentially expressed genes? 
+#### ❓(Ignore this question...) ~~Question 4: Following the comparison of the expression of the two Luminal breast cancer groups (the default setup in the params.yml file), take a look at the output .txt file. What are some of the most differentially expressed genes?~~
 
-#### ❓Question 5: Do the same comparison as before but for the indegrees this time. 
+#### ❓Question 5: What are some of the top genes that differ in the amount they are being regulated? 
 
 ## Step 4: Survival analysis
 For performing survival analyses, you can use a command like this:
@@ -183,7 +188,7 @@ sisana gsea ./example_inputs/params.yml
 <br />
 <br />
 
-#### ❓Question 7: Following running the "sisana gsea" step, what are the three top pathways? Run this step again, but with the Hallmark gene set instead of the Reactome one.
+#### ❓Question 7: Following running the "sisana gsea" step, what are the three top pathways? Run this step again, but with the Reactome gene set instead of the Hallmarks one.
 
 ## Step 6: Visualization of results
 The "visualize" command allows you to visualize the results of your analysis on publication-ready figures. There are multiple types of visualization you can perform, including generating volcano plots...

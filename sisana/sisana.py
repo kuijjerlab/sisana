@@ -508,6 +508,7 @@ def cli():
                          difftype=volcano_params["difftype"],
                          genelist=volcano_params["genelist"],
                          outdir=volcano_params["outdir"],
+                         numlabels=volcano_params["numlabels"],
                          top=False)      
             
             down_gene_str = f"number of genes up in group 1: {down_gene_count}"
