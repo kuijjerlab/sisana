@@ -159,8 +159,6 @@ sisana survival ./example_inputs/params.yml
 <br />
 <br />
 
-#### ❓Question 6: . Take a look at the output of the "sisana survival" command. Do you know how to interpret this image? Additionally, there is a p-value listed there. Do you think we can conclude based on this p-value that there is a significant difference in the survival of Luminal A vs Luminal B patients?
-
 
 
 ## Step 5: Performing gene set enrichment analysis 
@@ -214,5 +212,3 @@ sisana summarize
 <p align="center">
   <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/example_html_output.png" width="750" />
 </p> 
-
-#### ❓Question 10. How many TFs have edges that connect to (regulate) the GDI2 gene in your network? (Hint: Use the help function of SiSaNA (sisana -h) to find a subcommand that can help with this).
