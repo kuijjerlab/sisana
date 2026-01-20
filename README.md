@@ -88,10 +88,6 @@ sisana -e
 ```
 These files will be downloaded from [Zenodo](https://zenodo.org/records/17190643) and stored in a directory called "example_inputs". One of these example files is the params.yml file, which can be used as a template and edited for your own data (see next section). Each user-defined parameter in the params.yml file is documented with a comment to explain the function of the parameter. The comments do not need to be removed prior to running SiSaNA. The files in this example_inputs directory can be used in the commands listed down below.
 
-#### ❓Question 1: What is the structure of each of the three input files for SiSaNA's preprocessing step? What do the columns represent in each of the files? 
-
-#### ❓Question 2: How many genes are being used as input in the expression file? How many unique TFs are in the prior motif file? How many unique genes in the prior motif file?
-
 ## SiSaNA help documentation
 To view help documentation on which subcommands are available, the following can be used:
 ```
@@ -140,8 +136,6 @@ sisana generate ./example_inputs/params.yml
 <br />
 <br />
 
-#### ❓Question 3: After running the generate step, a few files are automatically generated. Which of them might you use to determine which genes were being most highly regulated?
-
 ## Step 3: Comparing two experimental groups
 The next stage in SiSaNA, "compare", is used to find out how the in-degree and out-degree differ between each group. SiSaNA offers multiple ways to do this comparison, including t-tests (and Mann-Whitney tests) and paired t-tests (and Wilcoxon paired t-tests).
 
@@ -152,10 +146,6 @@ sisana compare ./example_inputs/params.yml
 ```
 <br />
 <br />
-
-#### ❓(Ignore this question...) ~~Question 4: Following the comparison of the expression of the two Luminal breast cancer groups (the default setup in the params.yml file), take a look at the output .txt file. What are some of the most differentially expressed genes?~~
-
-#### ❓Question 5: What are some of the top genes that differ in the amount they are being regulated? 
 
 ## Step 4: Survival analysis
 For performing survival analyses, you can use a command like this:
@@ -168,8 +158,6 @@ sisana survival ./example_inputs/params.yml
 </p>
 <br />
 <br />
-
-#### ❓Question 6: . Take a look at the output of the "sisana survival" command. Do you know how to interpret this image? Additionally, there is a p-value listed there. Do you think we can conclude based on this p-value that there is a significant difference in the survival of Luminal A vs Luminal B patients?
 
 
 
@@ -188,8 +176,6 @@ sisana gsea ./example_inputs/params.yml
 <br />
 <br />
 
-#### ❓Question 7: Following running the "sisana gsea" step, what are the three top pathways? Run this step again, but with the Reactome gene set instead of the Hallmarks one.
-
 ## Step 6: Visualization of results
 The "visualize" command allows you to visualize the results of your analysis on publication-ready figures. There are multiple types of visualization you can perform, including generating volcano plots...
 ```
@@ -199,20 +185,14 @@ sisana visualize volcano ./example_inputs/params.yml
   <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/volcano_plot_adjp_0.25.png" width="500" />
 </p>
 
-#### ❓Question 8. Now let's look at the output of the "sisana visualize volcano" command. What do the dots on the left and right side of the plot represent? Do you recognize any of these genes?
-
 ...making boxplots or violin plots of expression/degrees...
 ```
 sisana visualize quantity ./example_inputs/params.yml
 ```
-<<<<<<< HEAD
 
-#### ❓Question 9. Take 5 of the top differential indegrees (which you calculated in step 4) and make a box plot for those genes.
-=======
 <p align="center">
   <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/LumA_LumB_indegree_box_plot.png" width="500" />
 </p>
->>>>>>> parent of 853eb82 (Removed images for OBiWoW workshop)
 
 ...and creating heatmaps
 ```
@@ -232,5 +212,3 @@ sisana summarize
 <p align="center">
   <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/example_html_output.png" width="750" />
 </p> 
-
-#### ❓Question 10. How many TFs have edges that connect to (regulate) the GDI2 gene in your network? (Hint: Use the help function of SiSaNA (sisana -h) to find a subcommand that can help with this).
