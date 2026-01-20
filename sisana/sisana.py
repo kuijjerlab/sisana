@@ -130,13 +130,14 @@ def cli():
         """
         
         temp_dict = default_dict
-        
+            
         for key, source_value in user_dict.items():
             if key not in default_dict:
                 temp_dict[key] = user_dict[key]
                 
             if default_dict[key] != user_dict[key]:
                 temp_dict[key] = source_value
+    
         return temp_dict
 
     updated_params = {}
@@ -153,9 +154,10 @@ def cli():
     # print(def_params["visualize"])
     
     updated_params["visualize"] = {}
-    for key in nested_dict_keys:
-        if key in params["visualize"]:
-            updated_params["visualize"][key] = update_if_different(def_params["visualize"][key], params["visualize"][key])
+    if "visualize" in params:
+        for vis_type in nested_dict_keys:
+            if vis_type in params["visualize"]:
+                updated_params["visualize"][vis_type] = update_if_different(def_params["visualize"][vis_type], params["visualize"][vis_type])
 
     # for k,v in updated_params["visualize"].items():
     #     print("\n")
@@ -479,8 +481,11 @@ def cli():
     ########################################################   
         
     if args.command == 'gsea':    
-        gsea_params = updated_params["gsea"]
-        
+        try:
+            gsea_params = updated_params["gsea"]
+        except KeyError:
+            raise Exception("Error: No parameters for visualization of 'volcano' have been set in the params.yml file.")
+            
         outfiles = perform_gsea(genefile=gsea_params["genefile"], 
                         gmtfile=gsea_params["gmtfile"], 
                         geneset=gsea_params["geneset"], 
@@ -497,9 +502,11 @@ def cli():
     if args.command == "visualize":                  
 
         if args.plotchoice == "volcano": 
-
-            volcano_params = updated_params["visualize"]["volcano"]
-
+            try:
+                volcano_params = updated_params["visualize"]["volcano"]
+            except KeyError:
+                raise Exception("Error: No parameters for visualization of 'volcano' have been set in the params.yml file.")
+            
             outfiles, down_gene_count, up_gene_count = plot_volcano(statsfile=volcano_params["statsfile"],
                          diffcol=volcano_params["diffcol"],
                          adjpcol=volcano_params["adjpcol"],
@@ -521,7 +528,11 @@ def cli():
                 [outfiles], extra_info_num_genes)
     
         if args.plotchoice == "quantity":   
-            quantity_params = updated_params["visualize"]["quantity"]
+            try:   
+                quantity_params = updated_params["visualize"]["quantity"]
+            except KeyError:
+                raise Exception("Error: No parameters for visualization of 'quantity' have been set in the params.yml file.")
+            
             
             if quantity_params["genelist"] != None:
                 outfiles = plot_expression_degree(datafile=quantity_params["datafile"],
@@ -570,8 +581,11 @@ def cli():
         #                 top=False)  
             
         if args.plotchoice == "heatmap":    
-            heatmap_params = updated_params["visualize"]["heatmap"]
-
+            try:
+                heatmap_params = updated_params["visualize"]["heatmap"]
+            except KeyError:
+                raise Exception("Error: No parameters for visualization of 'heatmap' have been set in the params.yml file.")
+            
             outfiles = plot_clustermap(datafile=heatmap_params["datafile"],
                         filetype=heatmap_params["filetype"], 
                         metadata=heatmap_params["metadata"],
@@ -595,8 +609,11 @@ def cli():
     ########################################################
 
     if args.command == 'extract':
-        extract_params = updated_params["extract"]
-
+        try:
+            extract_params = updated_params["extract"]
+        except KeyError:
+            raise Exception("Error: No parameters for 'extract' have been set in the params.yml file.")
+            
         outfiles = extract_tfs_genes(pickle=extract_params["pickle"], 
                          datatype=args.extractchoice, 
                          sampnames=extract_params["sampnames"],
