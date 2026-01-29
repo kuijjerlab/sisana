@@ -1,5 +1,6 @@
 ### 1.5.3
 - Fixed a bug where the visualization commands would fail due to incorrect arguments being supllied
+- Added input validation for the params file
 
 ### 1.5.2
 - Fixed a bug where the incorrect genes are labeled on a volcano plot
