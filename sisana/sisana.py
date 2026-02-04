@@ -3,7 +3,7 @@ import argparse
 from netZooPy.panda.panda import Panda
 from netZooPy.lioness.lioness import Lioness
 from sisana.default_parameters import get_default_params 
-from sisana.preprocessing import preprocess_data
+from sisana.preprocessing import preprocess_data, validate_user_params, validate_header, validate_metadata, check_genelist_top
 from sisana.postprocessing import convert_lion_to_pickle, extract_tfs_genes
 # from sisana.postprocessing import convert_lion_to_pickle, extract_tfs_genes, quantile_normalize_edges
 from sisana.analyze_networks import calculate_panda_degree, calculate_lioness_degree, compare_bw_groups, survival_analysis, perform_gsea, plot_volcano, plot_expression_degree, plot_heatmap, plot_clustermap, summarize
@@ -85,10 +85,10 @@ def cli():
     summ.add_argument("logdir", nargs='?', type=str, default="./log_files/", help='Path to the directory containing the previously made log files')
 
     args = parser.parse_args()
+
       
     # If user wants example files, retrieve them from Zenodo
     if args.example:
-        
         print("Downloading example input files from Zenodo. Please wait...")
         fetch_files()
         print("Example input files have been created in ./example_inputs/")
@@ -105,6 +105,12 @@ def cli():
     else:
         summarize(args.logdir)
         sys.exit(0)
+
+    # Validate params file
+    if args.command != "visualize":
+        validate_user_params(params, args.command)
+    else:
+        validate_user_params(params, args.command, args.plotchoice)
 
     # Create output for temp files if one does not already exist
     os.makedirs('./tmp/', exist_ok=True)
@@ -148,16 +154,13 @@ def cli():
     for key in single_dict_keys:
         if key in params:
             updated_params[key] = update_if_different(def_params[key], params[key])
-    
-    # print("\n")
-    # print(params["visualize"])
-    # print(def_params["visualize"])
-    
+
     updated_params["visualize"] = {}
     if "visualize" in params:
         for vis_type in nested_dict_keys:
             if vis_type in params["visualize"]:
                 updated_params["visualize"][vis_type] = update_if_different(def_params["visualize"][vis_type], params["visualize"][vis_type])
+    # sys.exit(0)
 
     # for k,v in updated_params["visualize"].items():
     #     print("\n")
@@ -183,6 +186,8 @@ def cli():
         #     for line in name_list:
         #         f.write(f"{line}\n")
         
+        validate_header(preprocess_params['exp_file'], preprocess_params['filetype'])
+        
         # Remove genes that are not expressed in at least the user-defined minimum ("number")
         results = preprocess_data(preprocess_params['exp_file'], 
                         preprocess_params['filetype'], 
@@ -207,7 +212,7 @@ def cli():
     if args.command == 'generate':
         
         generate_params = updated_params['generate']
-
+        
         if generate_params['method'].lower() == 'panda' or generate_params['method'].lower() == 'lioness':
 
             # data_paths = yaml.load(open('./tmp/processed_data_paths.yml'), Loader=yaml.FullLoader)
@@ -430,9 +435,7 @@ def cli():
         if updated_params["combine"]["networks"] == True:
             _get_batched_files(numpy_dataframes, numpy_filenames, "lioness_networks_samples_*_to_*.npy", "npy")                  
             combined_nw = pd.concat(numpy_dataframes, axis=1)
-            
-            # print(combined_nw)
-            
+                        
             pickle_path = './tmp/lioness.pickle'
             np_path = f"{degree_dir_path}/lioness_network.npy"
             
@@ -462,6 +465,9 @@ def cli():
         
     if args.command == "compare":     
         compare_means_params = updated_params['compare']
+        
+        validate_header(compare_means_params['datafile'], compare_means_params['filetype'])
+        validate_metadata(compare_means_params['mapfile'])
 
         outfiles = compare_bw_groups(datafile=compare_means_params["datafile"], 
                                     mapfile=compare_means_params["mapfile"], 
@@ -481,11 +487,8 @@ def cli():
     ########################################################   
         
     if args.command == 'gsea':    
-        try:
-            gsea_params = updated_params["gsea"]
-        except KeyError:
-            raise Exception("Error: No parameters for visualization of 'volcano' have been set in the params.yml file.")
-            
+        gsea_params = updated_params["gsea"]
+
         outfiles = perform_gsea(genefile=gsea_params["genefile"], 
                         gmtfile=gsea_params["gmtfile"], 
                         geneset=gsea_params["geneset"], 
@@ -502,10 +505,10 @@ def cli():
     if args.command == "visualize":                  
 
         if args.plotchoice == "volcano": 
-            try:
-                volcano_params = updated_params["visualize"]["volcano"]
-            except KeyError:
-                raise Exception("Error: No parameters for visualization of 'volcano' have been set in the params.yml file.")
+            check_genelist_top(params, updated_params, "volcano")
+            # sys.exit(0)
+            
+            volcano_params = updated_params["visualize"]["volcano"]
             
             outfiles, down_gene_count, up_gene_count = plot_volcano(statsfile=volcano_params["statsfile"],
                          diffcol=volcano_params["diffcol"],
@@ -527,40 +530,26 @@ def cli():
                 volcano_params, 
                 [outfiles], extra_info_num_genes)
     
-        if args.plotchoice == "quantity":   
+        if args.plotchoice == "quantity":  
+            check_genelist_top(params, updated_params, "quantity")
+ 
             try:   
                 quantity_params = updated_params["visualize"]["quantity"]
             except KeyError:
                 raise Exception("Error: No parameters for visualization of 'quantity' have been set in the params.yml file.")
             
-            
-            if quantity_params["genelist"] != None:
-                outfiles = plot_expression_degree(datafile=quantity_params["datafile"],
-                            filetype=quantity_params["filetype"], 
-                            statsfile=quantity_params["statsfile"], 
-                            metadata=quantity_params["metadata"],
-                            plottype=quantity_params["plottype"],
-                            groups=quantity_params["groups"],
-                            colors=quantity_params["colors"],
-                            prefix=quantity_params["prefix"],
-                            yaxisname=quantity_params["yaxisname"],
-                            outdir=quantity_params["outdir"],
-                            genelist=quantity_params["genelist"],
-                            top=False)   
-            else:
-                outfiles = plot_expression_degree(datafile=quantity_params["datafile"],
-                            filetype=quantity_params["filetype"], 
-                            statsfile=quantity_params["statsfile"], 
-                            metadata=quantity_params["metadata"],
-                            plottype=quantity_params["plottype"],
-                            groups=quantity_params["groups"],
-                            colors=quantity_params["colors"],
-                            prefix=quantity_params["prefix"],
-                            yaxisname=quantity_params["yaxisname"],
-                            outdir=quantity_params["outdir"],
-                            genelist=quantity_params["genelist"],
-                            numgenes=quantity_params["numgenes"],
-                            top=True)   
+            outfiles = plot_expression_degree(datafile=quantity_params["datafile"],
+                        filetype=quantity_params["filetype"], 
+                        statsfile=quantity_params["statsfile"], 
+                        metadata=quantity_params["metadata"],
+                        plottype=quantity_params["plottype"],
+                        groups=quantity_params["groups"],
+                        colors=quantity_params["colors"],
+                        prefix=quantity_params["prefix"],
+                        yaxisname=quantity_params["yaxisname"],
+                        outdir=quantity_params["outdir"],
+                        genelist=quantity_params["genelist"],
+                        top=quantity_params["top"])   
                 
             create_log_file("quantity_plot", 
                 quantity_params, 
@@ -580,7 +569,9 @@ def cli():
         #                 outdir=params["visualize"]["heatmap"]["outdir"],
         #                 top=False)  
             
-        if args.plotchoice == "heatmap":    
+        if args.plotchoice == "heatmap":  
+            check_genelist_top(params, updated_params, "heatmap")
+  
             try:
                 heatmap_params = updated_params["visualize"]["heatmap"]
             except KeyError:

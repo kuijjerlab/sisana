@@ -57,21 +57,22 @@ def get_default_params():
     def_volcano["outdir"] = "./output/volcano/"
     def_volcano["top"] = True 
     def_volcano["numlabels"] = 15
-
+    def_volcano["genelist"] = None
+    
     def_params["visualize"]["quantity"] = {}
     def_quantity = def_params["visualize"]["quantity"]
     def_quantity["plottype"] = "boxplot"
-    def_quantity["colors"] = ["cornflowerblue", "orange"]
     def_quantity["outdir"] = "./output/plot_quantity/"
     def_quantity["prefix"] = "results"
+    def_quantity["numgenes"] = 5   
     def_quantity["genelist"] = None
-    def_quantity["numgenes"] = 5
+    def_quantity["top"] = True
 
     def_params["visualize"]["heatmap"] = {}
     def_heatmap = def_params["visualize"]["heatmap"]
     def_heatmap["column_cluster"] = False
     def_heatmap["row_cluster"] = True
-    def_heatmap["plot_gene_names"] = True
+    def_heatmap["plot_gene_names"] = False
     def_heatmap["plot_sample_names"] = False
     def_heatmap["outdir"] = "./output/heatmap/"
     def_heatmap["prefix"] = "results"
