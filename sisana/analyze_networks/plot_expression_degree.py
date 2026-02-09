@@ -213,7 +213,11 @@ def plot_expression_degree(datafile: str, filetype: str, statsfile: str, metadat
     
     plt.figtext(0.5, 0.01, '* p < 0.05, ** p < 0.01, *** p < 0.001, **** p < 0.0001', horizontalalignment='center')
     plt.tight_layout()
-    plt.subplots_adjust(bottom=0.18) 
+    plt.subplots_adjust(bottom=0.18)
+    
+    if top == True: 
+        outname = f"{outname[:-4]}_top_{numgenes}.png"
+        
     plt.savefig(outname)
     print(f"\nFile saved: {outname}\n")
     
