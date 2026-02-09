@@ -3,7 +3,7 @@ import argparse
 from netZooPy.panda.panda import Panda
 from netZooPy.lioness.lioness import Lioness
 from sisana.default_parameters import get_default_params 
-from sisana.preprocessing import preprocess_data, validate_user_params, validate_header, validate_metadata, check_genelist_top
+from sisana.preprocessing import preprocess_data, validate_user_params, validate_header, validate_metadata, check_genelist_top, check_ncore_value
 from sisana.postprocessing import convert_lion_to_pickle, extract_tfs_genes
 # from sisana.postprocessing import convert_lion_to_pickle, extract_tfs_genes, quantile_normalize_edges
 from sisana.analyze_networks import calculate_panda_degree, calculate_lioness_degree, compare_bw_groups, survival_analysis, perform_gsea, plot_volcano, plot_expression_degree, plot_heatmap, plot_clustermap, summarize
@@ -17,7 +17,7 @@ import re
 import glob
 import numpy as np
 from pathlib import Path
-
+ 
 def cli():
     """
     SiSaNA command line interface
@@ -160,15 +160,6 @@ def cli():
         for vis_type in nested_dict_keys:
             if vis_type in params["visualize"]:
                 updated_params["visualize"][vis_type] = update_if_different(def_params["visualize"][vis_type], params["visualize"][vis_type])
-    # sys.exit(0)
-
-    # for k,v in updated_params["visualize"].items():
-    #     print("\n")
-    #     print(k)
-    #     for x,y in v.items():
-    #         print(f"{x}: {y}")    
-        
-    # sys.exit(0)
 
     ########################################################
     # 1) Preprocess the data
@@ -212,41 +203,44 @@ def cli():
     if args.command == 'generate':
         
         generate_params = updated_params['generate']
+        if generate_params["method"] == "lioness":
+            check_ncore_value(generate_params["ncores"])
+
+        # # Must run panda regardless 
+        # if generate_params['method'].lower() == 'panda' or generate_params['method'].lower() == 'lioness':
+
+        # data_paths = yaml.load(open('./tmp/processed_data_paths.yml'), Loader=yaml.FullLoader)
         
-        if generate_params['method'].lower() == 'panda' or generate_params['method'].lower() == 'lioness':
+        # Create output dir if one does not already exist
+        panda_output_location = generate_params['pandafilepath']
 
-            # data_paths = yaml.load(open('./tmp/processed_data_paths.yml'), Loader=yaml.FullLoader)
-            
-            # Create output dir if one does not already exist
-            panda_output_location = generate_params['pandafilepath']
+        pandapath = Path(panda_output_location)
+        if str(pandapath)[-4:] != ".txt":
+            raise Exception("Error: Panda output file must have a .txt extension. Please edit your pandafilepath variable in your params file.")
+        os.makedirs(pandapath.parent, exist_ok=True)
+        
+        panda_obj = Panda(expression_file=generate_params['exp'], 
+            motif_file=generate_params['motif'], 
+            ppi_file=generate_params['ppi'], 
+            computing=generate_params['compute'],
+            modeProcess=generate_params['modeProcess'],
+            save_tmp=False, 
+            remove_missing=False, 
+            keep_expression_matrix=True, 
+            save_memory=False,
+            with_header=True)
 
-            pandapath = Path(panda_output_location)
-            if str(pandapath)[-4:] != ".txt":
-                raise Exception("Error: Panda output file must have a .txt extension. Please edit your pandafilepath variable in your params file.")
-            os.makedirs(pandapath.parent, exist_ok=True)
+        panda_res = panda_obj.export_panda_results
+        panda_res = panda_res.sort_values(by=["tf", "gene"])
+        panda_res.to_csv(panda_output_location, sep=" ", index=False)
+        # panda_obj.save_panda_results(panda_output_location, old_compatible=False)     
+        
+        print("Now calculating PANDA degrees...")
+        calculate_panda_degree(inputfile=panda_output_location)
             
-            panda_obj = Panda(expression_file=generate_params['exp'], 
-                motif_file=generate_params['motif'], 
-                ppi_file=generate_params['ppi'], 
-                computing=generate_params['compute'],
-                modeProcess=generate_params['modeProcess'],
-                save_tmp=False, 
-                remove_missing=False, 
-                keep_expression_matrix=True, 
-                save_memory=False,
-                with_header=True)
-
-            panda_res = panda_obj.export_panda_results
-            panda_res = panda_res.sort_values(by=["tf", "gene"])
-            panda_res.to_csv(panda_output_location, sep=" ", index=False)
-            # panda_obj.save_panda_results(panda_output_location, old_compatible=False)     
-            
-            print("Now calculating PANDA degrees...")
-            calculate_panda_degree(inputfile=panda_output_location)
-               
         if generate_params['method'].lower() == 'lioness':
             lioness_full_path = generate_params['lionessfilepath']
-
+            
             if lioness_full_path[-4:] != ".npy":
                 raise Exception("Error: Lioness output file must have a .npy extension. Please edit your lionessfilepath variable in your params file.")
 
@@ -379,7 +373,6 @@ def cli():
             samplist = file.readlines()
             # Optional: Remove newline characters
             samplist = [samp.strip() for samp in samplist] 
-        print(samplist)
 
         panda_file = pd.read_csv(combine_params['panda_file'], sep = " ")
         panda_file["edge"] = panda_file["tf"] + "-" + panda_file["gene"] 
@@ -394,7 +387,6 @@ def cli():
             if ext == "csv":
                 for file in glob.glob(f"{degree_dir_path}/{regex}"):
                     df = pd.read_csv(file, index_col=0)
-                    # print(df)
                     df_list.append(df)
                     fname_list.append(file)
             else:
@@ -403,14 +395,11 @@ def cli():
                     startsamp, endsamp = int(noext.split("_")[-3]), int(noext.split("_")[-1])
 
                     numpy_file = np.load(file)
-                    # print(len(numpy_file))
                     data = pd.DataFrame(numpy_file)
 
                     data.columns = samplist[startsamp-1:endsamp]
                     data.index = panda_file.index
           
-                    # print(panda_file)
-                    # print(data)
                     df_list.append(data)
                     fname_list.append(file)
 
@@ -506,7 +495,6 @@ def cli():
 
         if args.plotchoice == "volcano": 
             check_genelist_top(params, updated_params, "volcano")
-            # sys.exit(0)
             
             volcano_params = updated_params["visualize"]["volcano"]
             
@@ -519,7 +507,7 @@ def cli():
                          genelist=volcano_params["genelist"],
                          outdir=volcano_params["outdir"],
                          numlabels=volcano_params["numlabels"],
-                         top=False)      
+                         top=volcano_params["top"])      
             
             down_gene_str = f"number of genes up in group 1: {down_gene_count}"
             up_gene_str = f"number of genes up in group 2: {up_gene_count}"
@@ -531,6 +519,7 @@ def cli():
                 [outfiles], extra_info_num_genes)
     
         if args.plotchoice == "quantity":  
+
             check_genelist_top(params, updated_params, "quantity")
  
             try:   

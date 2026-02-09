@@ -1,5 +1,6 @@
-### 1.5.3
-- Fixed a bug where the visualization commands would fail due to incorrect arguments being supllied
+### 1.6.1
+- Fixed a bug where commands would fail if the user did not supply any visualization parameters in the params file.
+- Labeled required and optional parameters in the params.yml file. Some parameters, like the "genelist" parameters in the visualization parameters are required to exist in the params.yml file, but must be left blank if the user does not want to use them (e.g. it will look like "genelist: " instead of "genelist: file.txt")
 
 ### 1.5.2
 - Fixed a bug where the incorrect genes are labeled on a volcano plot

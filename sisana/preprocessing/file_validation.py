@@ -89,8 +89,8 @@ def validate_user_params(params_dict, command, subcommand=None):
         outdir: ./output/gsea/"""
     
     params["volcano"] = {}
-    params["volcano"]["required"] = ["statsfile", "diffcol"]
-    params["volcano"]["optional"] = ["adjpcol", "xaxisthreshold", "adjpvalthreshold", "difftype", "outdir", "top", "numlabels", "genelist"]
+    params["volcano"]["required"] = ["statsfile", "diffcol", "top", "genelist"]
+    params["volcano"]["optional"] = ["adjpcol", "xaxisthreshold", "adjpvalthreshold", "difftype", "outdir", "numlabels"]
     params["volcano"]["example"] = """
     visualize:
         volcano: 
@@ -103,8 +103,8 @@ def validate_user_params(params_dict, command, subcommand=None):
             outdir: ./output/volcano/"""
     
     params["quantity"] = {}
-    params["quantity"]["required"] = ["datafile", "statsfile", "filetype", "metadata", "groups", "colors", "prefix", "yaxisname"]    
-    params["quantity"]["optional"] = ["plottype", "outdir", "prefix", "genelist", "numgenes", "top"]    
+    params["quantity"]["required"] = ["datafile", "statsfile", "filetype", "metadata", "groups", "colors", "prefix", "yaxisname",  "genelist", "top"]    
+    params["quantity"]["optional"] = ["plottype", "outdir", "prefix", "numgenes"]    
     params["quantity"]["example"] = """
     visualize:
         quantity: 
@@ -148,7 +148,7 @@ def validate_user_params(params_dict, command, subcommand=None):
     
     params["extract"] = {}
     params["extract"]["required"] = ["symbols"]    
-    params["extract"]["required"] = ["pickle", "sampnames", "outdir"]    
+    params["extract"]["optional"] = ["pickle", "sampnames", "outdir"]    
     params["extract"]["example"] = """
     extract:
         pickle: ./tmp/lioness.pickle
@@ -172,10 +172,16 @@ def validate_user_params(params_dict, command, subcommand=None):
         Description:
             Takes a command name and checks to make sure the required parameters were supplied by the user for that command, as well as ensures that the optional paramaters supplied are valid names
         
-        - user_params: dict, a dictionary of the parameters the user has set in their yaml file
-        - com: str, the subcommand the user is running (preprocess, generate, etc.)
-        - required_params_list: list, list of required parameters for that command
-        - optional_params_list: list, list of optional parameters for that command
+        Parameters:
+        -----------     
+            - user_params: dict, a dictionary of the parameters the user has set in their yaml file
+            - com: str, the subcommand the user is running (preprocess, generate, etc.)
+            - required_params_list: list, list of required parameters for that command
+            - optional_params_list: list, list of optional parameters for that command
+        
+        Returns:
+        -----------
+            - Nothing           
         """
 
         if command != "visualize":
@@ -259,6 +265,28 @@ def validate_header(df, delim):
     
     print(f"Header of data file appears valid. Continuing...")
            
+def check_ncore_value(requested_cores):
+    """
+    Description:
+        Checks to make sure that the number of cores requested by the user is not more than the number of samples. This is necessary
+        not only as a way to reduce computational load, but also because Lioness will encounter the error "AttributeError: 'Lioness' object 
+        has no attribute 'total_lioness_network'" if not enforced.
+
+    Parameters:
+    -----------     
+        - requested_cores: int, the number of cores the user requested in the params.yml file
+    
+    Returns:
+    -----------
+        - Nothing
+    """
+    
+    with open('./tmp/num_samples.txt') as f:
+        nsamps = int(f.read())
+            
+    if int(requested_cores) > nsamps:
+        raise Exception(f"Error: You have requested more cores ({requested_cores}) than you have samples ({nsamps}). Please ensure 'ncores' <= number of samples.") 
+            
 def validate_metadata(df):
     mapfile = pd.read_csv(df, index_col=0)
     
@@ -277,57 +305,68 @@ def check_genelist_top(user_params, updated_params_w_def, com):
         Checks to make sure that at least one of the two options are set for the visualize commands that can either plot
         just the top genes or take a list of genes to plot
      
-    - user_params: dict, the params dict from the user's params yaml file 
-    - updated_params_w_def: dict, the updated params dict (after filling in non-required default values)   
-    - com: str, the subcommand the user is running (preprocess, generate, etc.)
+    Parameters:
+    -----------  
+        - user_params: dict, the params dict from the user's params yaml file 
+        - updated_params_w_def: dict, the updated params dict (after filling in non-required default values)   
+        - com: str, the subcommand the user is running (preprocess, generate, etc.)
+        
+    Returns:
+    -----------
+        - Nothing
     """
+    if user_params["visualize"][com]["genelist"] is None and user_params["visualize"][com]["top"] == False:
+        raise Exception("Error: You must choose to either plot a list of genes by supplying a file to the 'genelist' parameter or plot only the top genes by setting the 'top' parameter to True.")
     
-    # print(user_params["visualize"][com])
-    # print("\n")
-    # print(updated_params_w_def["visualize"][com])
-    try:
-        genelist_user_value = user_params["visualize"][com]["genelist"]
-    except KeyError:
-        genelist_user_value = None   
+    if user_params["visualize"][com]["genelist"] is not None and user_params["visualize"][com]["top"] == True:
+        raise Exception("Error: You must choose to either plot a list of genes by supplying a file to the 'genelist' parameter or plot only the top genes by setting the 'top' parameter to True. Only one can be used at a given time.")
+    
+    # # print(user_params["visualize"][com])
+    # # print("\n")
+    # # print(updated_params_w_def["visualize"][com])
+    # try:
+    #     genelist_user_value = user_params["visualize"][com]["genelist"]
+    # except KeyError:
+    #     genelist_user_value = None   
          
-    try:
-        top_user_value = user_params["visualize"][com]["top"]
-        top_user_value_supplied = True
-    except KeyError:
-        top_user_value = False
-        top_user_value_supplied = False
+    # try:
+    #     top_user_value = user_params["visualize"][com]["top"]
+    #     top_user_value_supplied = True
+    # except KeyError:
+    #     top_user_value = False
+    #     top_user_value_supplied = False
    
-    # genelist_updated_value = updated_params_w_def["visualize"][com]["genelist"]
-    # top_updated_value = updated_params_w_def["visualize"][com]["top"]
+    # # genelist_updated_value = updated_params_w_def["visualize"][com]["genelist"]
+    # # top_updated_value = updated_params_w_def["visualize"][com]["top"]
 
-    # print("\nOriginal")
-    # print(genelist_user_value)
-    # print(top_user_value)
+    # # print("\nOriginal")
+    # # print(genelist_user_value)
+    # # print(top_user_value)
     
-    # print("\nUpdated")
-    # print(genelist_updated_value)
-    # print(top_updated_value)
+    # # print("\nUpdated")
+    # # print(genelist_updated_value)
+    # # print(top_updated_value)
     
-    # If user did supply a value for genelist, but then did not submit one for top, then we need to account for the 
-    # fact that the code will automatically update the missing 'top' value to True. Doing so would cause issues in the 
-    # if statements below, since it would interpret it as the user trying to incorrectly input both a genelist value
-    # and use only the top genes
-    # 
-    # Note that the default value for top is True in the default_parameters.py script, so in this case a user who did not
-    # supply a top parameter would automatically have the top_updated_value set to True
+    # # If user did supply a value for genelist, but then did not submit one for top, then we need to account for the 
+    # # fact that the code will automatically update the missing 'top' value to True. Doing so would cause issues in the 
+    # # if statements below, since it would interpret it as the user trying to incorrectly input both a genelist value
+    # # and use only the top genes
+    # # 
+    # # Note that the default value for top is True in the default_parameters.py script, so in this case a user who did not
+    # # supply a top parameter would automatically have the top_updated_value set to True
         
-    if genelist_user_value is not None and top_user_value_supplied == True and top_user_value == True:    
-        raise Exception("Error: You have set a value for your 'genelist' and also tried to plot the top values by setting 'top' to True. Only one can be used at a time.")
+    # if genelist_user_value is not None and top_user_value_supplied == True and top_user_value == True:    
+    #     raise Exception("Error: You have set a value for your 'genelist' and also tried to plot the top values by setting 'top' to True. Only one can be used at a time.")
         
-    # if genelist_user_value_supplied is not None and top_user_value_supplied == False:
-    # top_updated_value != top_user_value:
-    #     elif genelist_user_value is not None and top_user_value == True:
+    # # if genelist_user_value_supplied is not None and top_user_value_supplied == False:
+    # # top_updated_value != top_user_value:
+    # #     elif genelist_user_value is not None and top_user_value == True:
         
-    if genelist_user_value == None and top_user_value == False:
-        raise Exception("Error: Please make sure to set values for either the 'genelist' parameter or 'top' parameter in your params yaml file.")
+    # if genelist_user_value == None and top_user_value == False:
+    #     raise Exception("Error: Please make sure to set values for either the 'genelist' parameter or 'top' parameter in your params yaml file.")
       
-    # print(genelist_user_value)
-    # print(top_user_value)
+    # # print(genelist_user_value)
+    # # print(top_user_value)
     
-    print("Visualization parameters appear fine. Continuing...")
-    # sys.exit(0)
+    # print("Visualization parameters appear fine. Continuing...")
+    # # sys.exit(0)
