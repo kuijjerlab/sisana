@@ -112,7 +112,7 @@ In the below example, the user is running the "preprocess" step of SiSaNA. They 
 # Running SiSaNA
 
 ## Step 1: Pre-processing of data
-The "preprocess" subcommand is the first stage of SiSaNA, where it preprocess the input data to get it in a format that the PANDA and LIONESS algorithms can handle. This will likely involve the removal of genes or transcription factors that are not consistent across files. Information regarding the removal of these factors is given at the end of the preprocessing step.
+The "preprocess" subcommand is the first stage of SiSaNA, where it preprocess the input data to remove genes not expressed in enough samples (as defined by the user). Information regarding the removal of these genes is given at the end of the preprocessing step.
 
 #### Example command
 ```
