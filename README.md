@@ -71,7 +71,7 @@ pip3 install sisana
 > Note: that the files that are installed should be inside your conda directory, with the path 
 > ```
 > </path/to/env-name>/lib/site-packages/sisana/
-  ```
+>  ```
 
 4. Create a directory for the analysis and move into the analysis directory
 ```
