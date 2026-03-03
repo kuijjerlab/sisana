@@ -112,7 +112,7 @@ In the below example, the user is running the "preprocess" step of SiSaNA. They 
 
 
 > [!IMPORTANT]
-> We are aware of an issue on SiSaNA PyPI v1.5.3 where there is an issue that causes the error message "KeyError: 'visualize'" to occur if the user does not have a "visualize" section in their params.yml file. To address this issue, we are currently implementing a solution in the visualize_bug_fix branch. Alternatively, if you experience this error you can "fix" it by copying and pasting the "visualization" section of the example params file into your own params file (even though the parameter names may not match your own file paths). This error occurs when SiSaNA attempts to access parameters in the "visualize" section of the params file but the visualize section is not present. It should only occur in instances where individuals have deleted sections of the params.yml file that they were not intending to run for their analysis.
+> We are aware of an issue on SiSaNA PyPI v1.5.3 where the error message "KeyError: 'visualize'" appears if the user does not have a "visualize" section in their params.yml file. To address this issue, we are currently implementing a solution in the visualize_bug_fix branch. Alternatively, if you experience this error you can "fix" it by copying and pasting the "visualization" section of the example params file into your own params file (even though the parameter names may not match your own file paths). This error occurs when SiSaNA attempts to access parameters in the "visualize" section of the params file but the visualize section is not present. It should only occur in instances where individuals have deleted sections of the params.yml file that they were not intending to run for their analysis.
 
 # Running SiSaNA
 
