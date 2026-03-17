@@ -125,7 +125,7 @@ def validate_user_params(params_dict, command, subcommand=None):
     
     params["heatmap"] = {}
     params["heatmap"]["required"] = ["datafile", "filetype", "statsfile", "metadata", "genelist", "category_label_columns", "category_column_colors"]
-    params["heatmap"]["optional"] = ["column_cluster", "row_cluster", "plot_gene_names", "plot_sample_names", "outdir", "prefix"]
+    params["heatmap"]["optional"] = ["column_cluster", "row_cluster", "plot_gene_names", "plot_sample_names", "outdir", "prefix", "subset_for"]
     params["heatmap"]["example"] = """
     visualize:
         heatmap: 
@@ -238,7 +238,20 @@ def validate_user_params(params_dict, command, subcommand=None):
             
     print("Params file structure appears valid. Continuing...")
     
-def validate_header(df, delim):
+def check_for_header(df, delim):
+    """
+    Description:
+        Checks to make sure that the supplied file has a header
+
+    Parameters:
+    -----------     
+        - requested_cores: int, the number of cores the user requested in the params.yml file
+    
+    Returns:
+    -----------
+        - Nothing
+    """
+    
     # Make sure header is supplied (e.g. no numeric vals)
     if delim == "csv":
         with open(df, 'r') as f:
@@ -254,7 +267,6 @@ def validate_header(df, delim):
     def _is_number(s):
         try:
             float(s)
-            print("number found")
             return True
         except ValueError:
             return False
@@ -288,6 +300,18 @@ def check_ncore_value(requested_cores):
         raise Exception(f"Error: You have requested more cores ({requested_cores}) than you have samples ({nsamps}). Please ensure 'ncores' <= number of samples.") 
             
 def validate_metadata(df):
+    """
+    Description:
+        Checks the metadata for correct formatting
+
+    Parameters:
+    -----------     
+        - df: pd.DataFrame, Metadata data frame that the user supplied in the params file
+    
+    Returns:
+    -----------
+        - Nothing
+    """
     mapfile = pd.read_csv(df, index_col=0)
     
     if len(mapfile.columns) > 2:
