@@ -72,6 +72,7 @@ def get_default_params():
     def_heatmap["plot_sample_names"] = False
     def_heatmap["outdir"] = "./output/heatmap/"
     def_heatmap["prefix"] = "results"
+    def_heatmap["subset_for"] = None
     # def_heatmap["top"] = True    
 
     def_params["extract"] = {}

@@ -8,13 +8,17 @@ import matplotlib.pyplot as plt
 import matplotlib 
 import warnings
 from .analyze import WrongAmountOfColorsError
-def pnq(obj):
-        print(obj)
-        sys.exit(0)
+from typing import Optional
+
+def pnq(obj): # for debugging purposes 
+    print(obj)
+    sys.exit(0)
+    
+sys.setrecursionlimit(100000) # Required or else an error can occur where a maximum recursion limit is reached in scipy's hierarchy.py script (which is used by seaborn's matrix.py script)
       
 def plot_clustermap(datafile: str, filetype: str, metadata: str, genelist: str, column_cluster: bool,
                  row_cluster: bool, prefix: str, outdir: str, plot_gene_names: bool, plot_sample_names: bool, top: bool=True, 
-                 category_label_columns: list=[], category_column_colors: list=[], statsfile: str=""):
+                 category_label_columns: list=[], category_column_colors: list=[], statsfile: str="", subset_for: Optional[str]=None):
     '''
     Description:
         This code creates a heatmap of either the expression or degrees from LIONESS networks
@@ -39,7 +43,8 @@ def plot_clustermap(datafile: str, filetype: str, metadata: str, genelist: str, 
         - outdir: str, Path to output directory
         - top: Flag for whether to automatically plot the top 50 genes. Does not use the genelist in this case, but rather finds the top genes
                based on FDR and fold change.
-        - category_label_columns: Name of columns that include the groups used for labeling individuals (e.g. group, metastasis, stage, etc.)
+        - category_label_column: Name of column that include the group used for labeling individuals (e.g. group, metastasis, stage, etc.)
+        - subset_for: The name(s) of the group(s) to subset for. Only these groups will be plotted in the resulting heatmap.
     
     Returns:
     -----------
@@ -48,7 +53,8 @@ def plot_clustermap(datafile: str, filetype: str, metadata: str, genelist: str, 
     
     if len(category_label_columns) > 1:
         raise Exception("Error: At this time, SiSaNA only supports using one 'metadata' type for coloring of sample groups. Please change your params.yml file to only include one value for the 'category_label_columns' parameter.")
-    
+
+    print("Reading in files...")  
     if filetype == "csv":
         datadf = pd.read_csv(datafile, index_col = 0)
     elif filetype == "txt" or filetype == "tsv":
@@ -75,19 +81,49 @@ def plot_clustermap(datafile: str, filetype: str, metadata: str, genelist: str, 
         filtered = filter_for_top_genes(datafile=dat, 
                        statsfile=compare_df,                     
                        number=50)
+    
+    # If user only wants to plot a subset of the samples, remove the unwanted samples from the data and metadata
+    if subset_for is not None:
+        
+        print(category_column_colors)
+        print(subset_for)
+        sys.exit(0)
+        
+        if len(category_column_colors) != len(subset_for):
+            raise Exception("Error: CNSDJVIF")
+        
+        print(f"Subsetting for the following sample groups:")
+        [print(i) for i in subset_for]
+
+        # Subset for just the samples in the groups that the user has supplied in the category_label_columns parameter
+        samp_meta_file = samp_meta_file[samp_meta_file[str(category_label_columns[0])].isin(subset_for)]        
+        kept_samples = samp_meta_file.iloc[:, 0].tolist()
+                
+        # Filter the data file for the samples that are part of the user defined groups
+        filtered = filtered[kept_samples]
    
-    #### Note: This code will manually calculate the z-scores, as it is copied from the heatmap code. However, the built-in z-score ####
-    ####       option in the clustermap function does this as well. I have kept this manual calculation, however, as it allows for  ####
-    ####       the export of the z-score file that a user could use for plotting in other software.                                 ####                 
+    #### Note: The below code will manually calculate the z-scores, as it is copied from the heatmap code. However, the built-in z-score 
+    ####       option in the clustermap function does this as well. I have kept this manual calculation, however, as it allows for the
+    ####       export of the z-score file that a user could use for plotting in other software.                                                  
     
     from scipy.cluster.hierarchy import linkage, dendrogram
     from scipy.stats import zscore
+    
+    print("Performing z-score normalization...")
+    # Calculate z-scores across samples
     filtered_z = filtered.apply(zscore, axis=1)
+    
+    # Perform hierarchical clustering
+    print("Running linkage. Please be patient as this step may take some time...")
     Z = linkage(filtered_z, method='ward')
     leaf_order = dendrogram(Z, no_plot=True)['ivl']
-    ordered_df = filtered_z.iloc[map(int, leaf_order),:]
+    print("linkage calculation finished")
+
     
+    ordered_df = filtered_z.iloc[map(int, leaf_order),:]
     out_filtered_z_path = os.path.join(outdir, f"{prefix}_filtered_data_file_for_heatmap_genes_zscore.csv")
+    
+    print("Saving z-scores to file...")    
     ordered_df.to_csv(out_filtered_z_path)    
         
     min_val = np.percentile(filtered_z, 5) # vals will be the 1st and 99th percentile, so extreme (outlier) values will not influence the scale
@@ -135,8 +171,10 @@ def plot_clustermap(datafile: str, filetype: str, metadata: str, genelist: str, 
         # loop through column names ("Cancer_subtype", "Tumor_grade", etc.) and create a pandas series for each category to map the 
         # sample name to the column color in the resulting clustermap
         for category in cat_label_columns: 
+            
             num_unique_subcategories = len(metadata_df[category].unique())
             num_unique_color_codes = len(column_colors[column_cat_level])
+                        
             if num_unique_subcategories != num_unique_color_codes:
                 raise WrongAmountOfColorsError(category, num_unique_subcategories, num_unique_color_codes)
             # elif num_unique_subcategories < num_unique_color_codes:
@@ -161,7 +199,8 @@ def plot_clustermap(datafile: str, filetype: str, metadata: str, genelist: str, 
             column_cat_level += 1         
         
         return([sorted_data_df.T, assigned_colors, luts_dict])
-
+        
+    print("Creating plot, please wait...")
     df_for_plotting, col_color_dict, luts = _create_column_colors(ordered_df, samp_meta_file, category_label_columns, category_column_colors)
 
     col_colors_df = pd.DataFrame.from_dict(col_color_dict)
