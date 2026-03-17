@@ -36,6 +36,10 @@ dependencies = [
 ]
 license = "MIT"
 
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore:.*pkg_resources is deprecated as an API*:DeprecationWarning:netZooPy",
+]
 
 [tool.setuptools.packages.find]
 where = ["."] 
