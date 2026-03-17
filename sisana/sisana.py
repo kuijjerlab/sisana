@@ -1,9 +1,10 @@
 import yaml
 import argparse
 from netZooPy.panda.panda import Panda
+from importlib.metadata import version
 from netZooPy.lioness.lioness import Lioness
 from sisana.default_parameters import get_default_params 
-from sisana.preprocessing import preprocess_data, validate_user_params, validate_header, validate_metadata, check_genelist_top, check_ncore_value
+from sisana.preprocessing import preprocess_data, validate_user_params, check_for_header, validate_metadata, check_genelist_top, check_ncore_value
 from sisana.postprocessing import convert_lion_to_pickle, extract_tfs_genes
 # from sisana.postprocessing import convert_lion_to_pickle, extract_tfs_genes, quantile_normalize_edges
 from sisana.analyze_networks import calculate_panda_degree, calculate_lioness_degree, compare_bw_groups, survival_analysis, perform_gsea, plot_volcano, plot_expression_degree, plot_heatmap, plot_clustermap, summarize
@@ -86,7 +87,9 @@ def cli():
 
     args = parser.parse_args()
 
-      
+    s_version = sisana.__version__
+    nzp_version = version('netZooPy')     
+    
     # If user wants example files, retrieve them from Zenodo
     if args.example:
         print("Downloading example input files from Zenodo. Please wait...")
@@ -96,7 +99,7 @@ def cli():
         
     # If user wants version info
     if args.version:
-        print(f"SiSaNA version: {sisana.__version__}")
+        print(f"SiSaNA version: {s_version}")
         sys.exit(0)
 
     # If user has already performed analysis and wants an HTML summary file
@@ -118,7 +121,7 @@ def cli():
     # Create a dictionary with the default parameters for each step
     def_params = get_default_params()
                 
-    def update_if_different(default_dict, user_dict):
+    def update_if_different(default_dict, user_dict) -> dict:
         """    
         Description:
             Updates the default_dict with the user-defined parameters from user_dict,
@@ -177,7 +180,7 @@ def cli():
         #     for line in name_list:
         #         f.write(f"{line}\n")
         
-        validate_header(preprocess_params['exp_file'], preprocess_params['filetype'])
+        check_for_header(preprocess_params['exp_file'], preprocess_params['filetype'])
         
         # Remove genes that are not expressed in at least the user-defined minimum ("number")
         results = preprocess_data(preprocess_params['exp_file'], 
@@ -192,9 +195,12 @@ def cli():
         
         extra_info_preprocess = [removed_str, kept_str]
         
-        create_log_file("preprocess", 
-            preprocess_params, 
-            [fname], extra_info_preprocess)
+        create_log_file(subcommand="preprocess", 
+            params_dict=preprocess_params, 
+            filenames=[fname], 
+            netzoopy_version=nzp_version,
+            sisana_version=s_version,
+            additional_info=extra_info_preprocess)
         
     ########################################################
     # 2) Run PANDA, using the parameters from the yaml file
@@ -206,11 +212,6 @@ def cli():
         if generate_params["method"] == "lioness":
             check_ncore_value(generate_params["ncores"])
 
-        # # Must run panda regardless 
-        # if generate_params['method'].lower() == 'panda' or generate_params['method'].lower() == 'lioness':
-
-        # data_paths = yaml.load(open('./tmp/processed_data_paths.yml'), Loader=yaml.FullLoader)
-        
         # Create output dir if one does not already exist
         panda_output_location = generate_params['pandafilepath']
 
@@ -231,13 +232,14 @@ def cli():
             with_header=True)
 
         panda_res = panda_obj.export_panda_results
-        panda_res = panda_res.sort_values(by=["tf", "gene"])
+        # panda_res = panda_res.sort_values(by=["tf", "gene"])
         panda_res.to_csv(panda_output_location, sep=" ", index=False)
         # panda_obj.save_panda_results(panda_output_location, old_compatible=False)     
         
         print("Now calculating PANDA degrees...")
         calculate_panda_degree(inputfile=panda_output_location)
             
+        # If user wants to run lioness, then we need to do the following
         if generate_params['method'].lower() == 'lioness':
             lioness_full_path = generate_params['lionessfilepath']
             
@@ -246,6 +248,8 @@ def cli():
 
             lionesspath_no_ext = lioness_full_path[:-4]
 
+            # If user wants to run lioness in batches or only run for certain samples (e.g. 10 samples at a time), then do the following.
+            # Note that this still uses all samples as the background, but will only reconstruct networks for the given sample numbers
             if generate_params['start'] is not None:
                 lionesspath_new_path = Path(f"{lionesspath_no_ext}_samples_{generate_params['start']}_to_{generate_params['end']}.npy")                
             else:
@@ -278,9 +282,11 @@ def cli():
             #lion_loc = params['generate']['outdir'] + "lioness.npy"
             liondf = pd.DataFrame(np.load(lionesspath_new_path))            
                 
-            # To make the edges positive values for log2FC calculation later on, first need to transform 
-            # edges by doing ln(e^w + 1), then calculate degrees. Then you can do the log2FC of degrees
-            # in next step
+            # Note: The following was available in previous SiSaNA versions, but has been removed to reduce confusion from users. May be added back in at 
+            # a later date, though, so it is just commented out for now.
+            # 
+            # To make the edges positive values for log2FC calculation later on, first need to transform edges by doing ln(e^w + 1), then calculate degrees. 
+            # Then you can do the log2FC of degrees in next step
             # 
             # This transformation is described in the paper "Regulatory Network of PD1 Signaling Is Associated 
             # with Prognosis in Glioblastoma Multiforme"
@@ -303,7 +309,7 @@ def cli():
             print("\nLIONESS networks created. Now converting results to a .pickle file...")
             
             # Note that previously convert_lion_to_pickle() did not return anything, but now
-            # that SiSaNA no longer reads in the pickle fil in the calculate_lioness_degree()
+            # that SiSaNA no longer reads in the pickle file in the calculate_lioness_degree()
             # function, the re-formatted network is returned by convert_lion_to_pickle() to give
             # as input to calculate_lioness_degree()
             liondf = convert_lion_to_pickle(panda_output_location,
@@ -348,9 +354,11 @@ def cli():
                     f"{Path(lioness_full_path).parent}/{lioness_indeg_filename}.csv",
                     f"{Path(lioness_full_path).parent}/{lioness_outdeg_filename}.csv"]
             
-        create_log_file("generate", 
-                        generate_params, 
-                        outfiles)
+        create_log_file(subcommand="generate", 
+                        params_dict=generate_params, 
+                        netzoopy_version=nzp_version,
+                        sisana_version=s_version,
+                        filenames=outfiles)
         
     ########################################################
     # 2.5) (OPTIONAL) Combine the multiple degree files into a single
@@ -361,14 +369,7 @@ def cli():
         
         combine_params = updated_params['combine']
         degree_dir_path = str(Path(combine_params['degree_dir']))
-
-        indeg_dataframes = []
-        indeg_filenames = []
-        outdeg_dataframes = []
-        outdeg_filenames = []
-        numpy_dataframes = []
-        numpy_filenames = []
-
+        
         with open('./tmp/samples.txt', 'r') as file:
             samplist = file.readlines()
             # Optional: Remove newline characters
@@ -382,15 +383,32 @@ def cli():
         #     for samp in expdf.columns:
         #         f.write(col + "\n")
 
-        def _get_batched_files(df_list: list, fname_list: list, regex: str, ext: str):
+        def _get_batched_files(regex: str, ext: str):
+            """
+            Description:
+                Finds the batched indegree and outdegree files, saving them to their own lists
 
+            Parameters:
+            -----------     
+                - regex: str, regular expression to use for finding files
+                - ext: str, the extension of the files 
+            
+            Returns:
+            -----------
+                - Nothing
+            """
+            df_list = []
+            filenames_list = []
+            print("Files found to combine:")
             if ext == "csv":
                 for file in glob.glob(f"{degree_dir_path}/{regex}"):
+                    print(f"  - {file}")
                     df = pd.read_csv(file, index_col=0)
                     df_list.append(df)
-                    fname_list.append(file)
+                    filenames_list.append(file)
             else:
                 for file in glob.glob(f"{degree_dir_path}/{regex}"):
+                    print(f"  - {file}")
                     noext = file[:-4]
                     startsamp, endsamp = int(noext.split("_")[-3]), int(noext.split("_")[-1])
 
@@ -401,28 +419,31 @@ def cli():
                     data.index = panda_file.index
           
                     df_list.append(data)
-                    fname_list.append(file)
+                    filenames_list.append(file)
+                    
+            return(df_list, filenames_list)
 
         # Combine the degree files automatically, since they are relatively small.
         # Combining networks may run into memory issues, so it's optional
-        _get_batched_files(outdeg_dataframes, outdeg_filenames, "lioness_outdegree_samples_*_to_*.csv", "csv")
-        _get_batched_files(indeg_dataframes, indeg_filenames, "lioness_indegree_samples_*_to_*.csv", "csv")    
-        
+        print(f"\nCombining indegree files, please wait...")
+        indeg_dataframes, indeg_filenames = _get_batched_files("lioness_outdegree_samples_*_to_*.csv", "csv")
         combined_indeg = pd.concat(indeg_dataframes, axis=1)
-        combined_outdeg = pd.concat(outdeg_dataframes, axis=1)
-        
         combined_indeg.to_csv(f"{degree_dir_path}/lioness_indegree.csv", index=True)
-        combined_outdeg.to_csv(f"{degree_dir_path}/lioness_outdegree.csv", index=True)
-
         print(f"File created: {degree_dir_path}/lioness_indegree.csv")
+        
+        print(f"\nCombining outdegree files, please wait...")
+        outdeg_dataframes, outdeg_filenames = _get_batched_files("lioness_indegree_samples_*_to_*.csv", "csv")       
+        combined_outdeg = pd.concat(outdeg_dataframes, axis=1)
+        combined_outdeg.to_csv(f"{degree_dir_path}/lioness_outdegree.csv", index=True)
         print(f"File created: {degree_dir_path}/lioness_outdegree.csv")
                     
         if combine_params["delete_intermediate_files"] == True:
             [os.remove(file) for file in indeg_filenames]
             [os.remove(file) for file in outdeg_filenames]
                     
-        if updated_params["combine"]["networks"] == True:
-            _get_batched_files(numpy_dataframes, numpy_filenames, "lioness_networks_samples_*_to_*.npy", "npy")                  
+        if updated_params["combine"]["networks"] == True:   
+            print(f"\nCombining network files, please wait...")
+            numpy_dataframes, numpy_filenames = _get_batched_files("lioness_networks_samples_*_to_*.npy", "npy")                  
             combined_nw = pd.concat(numpy_dataframes, axis=1)
                         
             pickle_path = './tmp/lioness.pickle'
@@ -455,7 +476,7 @@ def cli():
     if args.command == "compare":     
         compare_means_params = updated_params['compare']
         
-        validate_header(compare_means_params['datafile'], compare_means_params['filetype'])
+        check_for_header(compare_means_params['datafile'], compare_means_params['filetype'])
         validate_metadata(compare_means_params['mapfile'])
 
         outfiles = compare_bw_groups(datafile=compare_means_params["datafile"], 
@@ -466,10 +487,12 @@ def cli():
                                     filetype=compare_means_params["filetype"],
                                     rankby_col=compare_means_params["rankby"],
                                     outdir=compare_means_params["outdir"])
-        
-        create_log_file("compare_means", 
-            compare_means_params, 
-            outfiles)
+ 
+        create_log_file(subcommand="compare_means", 
+            params_dict=compare_means_params, 
+            netzoopy_version=nzp_version,
+            sisana_version=s_version,
+            filenames=outfiles)
     
     ########################################################
     # 4) Perform gene set enrichment analysis
@@ -483,9 +506,11 @@ def cli():
                         geneset=gsea_params["geneset"], 
                         outdir=gsea_params["outdir"])
         
-        create_log_file("gsea", 
-            gsea_params, 
-            outfiles)
+        create_log_file(subcommand="gsea", 
+            params_dict=gsea_params, 
+            netzoopy_version=nzp_version,
+            sisana_version=s_version,
+            filenames=outfiles)
     
     ########################################################
     # 5) Visualize results
@@ -494,9 +519,11 @@ def cli():
     if args.command == "visualize":                  
 
         if args.plotchoice == "volcano": 
-            check_genelist_top(params, updated_params, "volcano")
+            # check_genelist_top(params, updated_params, "volcano")
             
             volcano_params = updated_params["visualize"]["volcano"]
+            # print(volcano_params)
+            # sys.exit(0)
             
             outfiles, down_gene_count, up_gene_count = plot_volcano(statsfile=volcano_params["statsfile"],
                          diffcol=volcano_params["diffcol"],
@@ -514,9 +541,12 @@ def cli():
             
             extra_info_num_genes = [down_gene_str, up_gene_str]
             
-            create_log_file("volcano_plot", 
-                volcano_params, 
-                [outfiles], extra_info_num_genes)
+            create_log_file(subcommand="volcano_plot", 
+                params_dict=volcano_params, 
+                netzoopy_version=nzp_version,
+                sisana_version=s_version,
+                filenames=[outfiles], 
+                additional_info=extra_info_num_genes)
     
         if args.plotchoice == "quantity":  
 
@@ -540,9 +570,11 @@ def cli():
                         genelist=quantity_params["genelist"],
                         top=quantity_params["top"])   
                 
-            create_log_file("quantity_plot", 
-                quantity_params, 
-                [outfiles])               
+            create_log_file(subcommand="quantity_plot", 
+                params_dict=quantity_params, 
+                netzoopy_version=nzp_version,
+                sisana_version=s_version,
+                filenames=[outfiles])               
                 
         # For now, the plot_heatmap option is being deprecated for use of the plot_clustermap option instead,
         # as the clustermap option allows for more user control and clustering of patients/parameters
@@ -559,7 +591,7 @@ def cli():
         #                 top=False)  
             
         if args.plotchoice == "heatmap":  
-            check_genelist_top(params, updated_params, "heatmap")
+            # check_genelist_top(params, updated_params, "heatmap")
   
             try:
                 heatmap_params = updated_params["visualize"]["heatmap"]
@@ -578,11 +610,14 @@ def cli():
                         plot_sample_names=heatmap_params["plot_sample_names"],
                         category_label_columns=heatmap_params["category_label_columns"],
                         category_column_colors=heatmap_params["category_column_colors"],                       
-                        top=False)   
+                        top=False,
+                        subset_for=heatmap_params["subset_for"])   
             
-            create_log_file("heatmap", 
-                heatmap_params, 
-                outfiles)  
+            create_log_file(subcommand="heatmap", 
+                params_dict=heatmap_params, 
+                netzoopy_version=nzp_version,
+                sisana_version=s_version,
+                filenames=outfiles)  
             
     ########################################################
     # (Optional) Extract edges that connect to specific TFs/genes
