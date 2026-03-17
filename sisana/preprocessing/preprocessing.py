@@ -28,6 +28,9 @@ def preprocess_data(exp: str, datatype: str, number: int, outdir: str):
     
     # Create output directory if one does not already exist
     os.makedirs(outdir, exist_ok=True)
+    
+    # Create output for temp files if one does not already exist
+    os.makedirs('./tmp/', exist_ok=True)
         
     if datatype == "csv":
         expdf = pd.read_csv(exp, index_col = 0)
