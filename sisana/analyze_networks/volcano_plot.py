@@ -28,7 +28,7 @@ def plot_volcano(statsfile: str, diffcol: str, adjpcol: str, adjpvalthreshold: s
         - difftype: str, The type of difference to use for the x-axis. "mean" will be difference in means and "median"
           refers to difference in medians
         - outdir: str, Path to directory to output file to
-        - top: Flag for whether to automatically label the top 10 values. Does not use the genelist in this case, but rather finds the top genes
+        - top: Flag for whether to automatically label the top values. Does not use the genelist in this case, but rather finds the top genes
           based on FDR and fold change.
         - numlabels: int, Number of top values to label. Can only be used if top=True.
         - genelist: str, Path to a .txt file containing a list of genes to plot. Alternatively, the top {numlabels} genes can be plotted instead if top=True.
