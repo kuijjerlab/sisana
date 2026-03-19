@@ -1,7 +1,10 @@
-### 1.5.3
+### 1.5.4 (upcoming version)
+- (Note: skipped 1.5.3 release to stay consistent with PyPI)
 - Fixed a bug where the visualization commands would fail due to incorrect arguments being supllied
 - Added input validation for the params file
 - Added version information to the log files
+- Added unit tests
+- Corrected the bug introduced in v1.5.0 where the panda output was sorted, then used as input to an unsorted df later on
 
 ### 1.5.2
 - Fixed a bug where the incorrect genes are labeled on a volcano plot
