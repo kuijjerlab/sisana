@@ -191,7 +191,7 @@ The "visualize" command allows you to visualize the results of your analysis on 
 sisana visualize volcano ./example_inputs/params.yml
 ```
 <p align="center">
-  <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/volcano_plot_adjp_0.25.png" width="500" />
+  <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/sisana_example_volcano_plot_v2.png" width="500" />
 </p>
 
 ...making boxplots or violin plots of expression/degrees...
