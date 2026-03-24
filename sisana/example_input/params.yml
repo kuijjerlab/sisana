@@ -76,8 +76,8 @@ survival:
 # example: sisana gsea ./example_inputs/params.yml
 gsea:
   genefile: ./output/compare_means/comparison_mw_between_LumA_LumB_degree_ranked_mediandiff.rnk # (Required) Path to file (.rnk format, which is two columns, tab delimited, no header) containing the genes and test statistics to do enrichment on. This file is generated with "sisana compare means"
-  gmtfile: ./example_inputs/c2.cp.reactome.v2023.2.Hs.symbols.gmt # (Required) Path to the gene set file in gmt format
-  geneset: Reactome # (Required) The gene set type used for gmtfile. This is just a string that gets added to the output file name, so you can describe the specific version used for your GMT file in this name.
+  gmtfile: ./example_inputs/Hallmark.v2023.2.Hs.symbols.gmt # (Required) Path to the gene set file in gmt format
+  geneset: Hallmarks # (Required) The gene set type used for gmtfile. This is just a string that gets added to the output file name, so you can describe the specific version used for your GMT file in this name.
   outdir: ./output/gsea/ # (Optional, Default: ./output/gsea/) The directory to save the output to
 
 # Stage 4: Visualize the differences between experimental groups. Specify which visualization to perform with "sisana visualize <visualization_type>" command
