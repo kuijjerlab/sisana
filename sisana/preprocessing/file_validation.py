@@ -100,7 +100,9 @@ def validate_user_params(params_dict, command, subcommand=None):
             xaxisthreshold: 50 
             adjpvalthreshold: 0.25
             difftype: median 
-            outdir: ./output/volcano/"""
+            outdir: ./output/volcano/
+            genelist: ./example_inputs/volcano_plot_genes.txt
+            top: False"""
     
     params["quantity"] = {}
     params["quantity"]["required"] = ["datafile", "statsfile", "filetype", "metadata", "groups", "colors", "prefix", "yaxisname",  "genelist", "top"]    
@@ -121,7 +123,9 @@ def validate_user_params(params_dict, command, subcommand=None):
                 - orange        
             prefix: LumA_LumB_indegree 
             yaxisname: Indegree
-            outdir: ./output/plot_quantity/"""
+            outdir: ./output/plot_quantity/
+            genelist: ./example_inputs/quantity_plot_genes.txt
+            top: False"""
     
     params["heatmap"] = {}
     params["heatmap"]["required"] = ["datafile", "filetype", "statsfile", "metadata", "genelist", "category_label_columns", "category_column_colors"]

@@ -20,7 +20,7 @@ def fetch_files():
     os.makedirs('./example_inputs/', exist_ok=True)
     
     # zenodo tag (must update with each new release). The tag is the XXXXXXXX in the following: https://zenodo.org/records/XXXXXXXX/files/*
-    tag = "17588960"
+    tag = "19210512"
     
     urls = [f'https://zenodo.org/records/{tag}/files/BRCA_TCGA_200_LumA_LumB_samps_mapping_w_header.csv',
             f'https://zenodo.org/records/{tag}/files/BRCA_TCGA_200_LumA_LumB_samps_survival_data.csv',
