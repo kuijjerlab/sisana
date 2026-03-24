@@ -56,10 +56,9 @@ class WrongAmountOfColorsError(Exception):
         unique_categories: list
         unique_subcategories: int, number of given color codes for the given category 
     """
-    def __init__(self, category: str, num_unique_subcategories: int, num_unique_color_codes: str, message="Error: You have not supplied the correct number of colors for a category."):
+    def __init__(self, category: str, num_unique_subcategories: int, num_unique_color_codes: str):
         self.category = category
         self.num_unique_subcategories = num_unique_subcategories
         self.num_unique_color_codes = num_unique_color_codes
-        print(f"\nError: The number of colors specified in your category_column_colors parameter in the params.yml file ({self.num_unique_color_codes}) does not match the number of unique subcategories found for the {category} category ({self.num_unique_subcategories}). Please fix and try running this script again.\n")
-        self.message = message 
+        self.message = f"\n\nError: The number of colors specified in your category_column_colors parameter in the params.yml file ({self.num_unique_color_codes}) does not match the number of unique subcategories found in your metadata file for the {category} category ({self.num_unique_subcategories}). Please fix and try running this script again.\n" 
         super().__init__(self.message)

@@ -7,10 +7,11 @@ import matplotlib.pyplot as plt
 import warnings
 from .analyze import file_to_list, NotASubsetError, filter_for_top_genes, filter_for_user_defined_genes, IncorrectHeaderError
 import os
+from typing import Optional
 
 def plot_expression_degree(datafile: str, filetype: str, statsfile: str, metadata: str, 
                   plottype: str, groups: list, colors: list, prefix: str, yaxisname: str, outdir: str,
-                  top: bool=True, numgenes: int=10, genelist: str=""):
+                  top: bool=True, numgenes: int=10, genelist: Optional[str]=None):
     """
     Description:
         This code creates either a violin plot or a box plot of gene expression or degree data. The plots are annotated using the previously
@@ -58,7 +59,7 @@ def plot_expression_degree(datafile: str, filetype: str, statsfile: str, metadat
     meta.columns = ["group"]
 
     # Create list of genes if the user has supplied a gene list 
-    if genelist != None:
+    if genelist is not None:
         user_gene_list = file_to_list(genelist)
 
         # Check if the user-supplied gene list is a subset of the genes in the data
@@ -74,7 +75,7 @@ def plot_expression_degree(datafile: str, filetype: str, statsfile: str, metadat
     compare_df = pd.read_csv(statsfile, sep = "\t", index_col=0)
     
     # If the user has supplied the gene list, plot just the genes they supplied. Otherwise, plot the top genes based on FDR and fold change
-    if genelist != None:
+    if genelist is not None:
         # Filter the data frame containing the degree/expression values for just the genes in the supplied gene list
         filtered_indata_genelist = filter_for_user_defined_genes(datafile=indata, genes=user_gene_list)
         # filtered_indata_genelist = indata.loc[:,user_gene_list]
@@ -212,7 +213,11 @@ def plot_expression_degree(datafile: str, filetype: str, statsfile: str, metadat
     
     plt.figtext(0.5, 0.01, '* p < 0.05, ** p < 0.01, *** p < 0.001, **** p < 0.0001', horizontalalignment='center')
     plt.tight_layout()
-    plt.subplots_adjust(bottom=0.18) 
+    plt.subplots_adjust(bottom=0.18)
+    
+    if top == True: 
+        outname = f"{outname[:-4]}_top_{numgenes}.png"
+        
     plt.savefig(outname)
     print(f"\nFile saved: {outname}\n")
     

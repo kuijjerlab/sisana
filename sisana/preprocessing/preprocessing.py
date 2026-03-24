@@ -28,6 +28,9 @@ def preprocess_data(exp: str, datatype: str, number: int, outdir: str):
     
     # Create output directory if one does not already exist
     os.makedirs(outdir, exist_ok=True)
+    
+    # Create output for temp files if one does not already exist
+    os.makedirs('./tmp/', exist_ok=True)
         
     if datatype == "csv":
         expdf = pd.read_csv(exp, index_col = 0)
@@ -51,6 +54,10 @@ def preprocess_data(exp: str, datatype: str, number: int, outdir: str):
     cutdf = cutdf.drop(columns=['num_samps_expressed'])
 
     cutdf.columns = expdf.columns[:-1]
+    nsamps_remaining = len(cutdf.columns)    
+        
+    with open("./tmp/num_samples.txt", "w") as f:
+        f.write(str(nsamps_remaining))
     
     # Print summary statistics for the filtering of exp files
     dist = expdf["num_samps_expressed"].value_counts()
