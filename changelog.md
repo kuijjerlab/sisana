@@ -1,3 +1,8 @@
+### 1.6.1 (upcoming release)
+- Fixed an issue in the previous release where the older example Zenodo files were installed. The visualization params in this file were incompatible with the new version.
+- Set a required GSEApy version, as newer updates to GSEApy were causing different plot colors and labels
+
+
 ### 1.6.0
 - (Note: skipped 1.5.3 GitHub release to stay consistent with PyPI)
 - Corrected the bug introduced in v1.5.0 where the panda output was sorted, then used as input to an unsorted df later on, resulting in incorrect results
