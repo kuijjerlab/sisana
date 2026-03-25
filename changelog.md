@@ -1,7 +1,7 @@
 ### 1.6.1 (upcoming release)
 - Fixed an issue in the previous release where the older example Zenodo files were installed. The visualization params in this file were incompatible with the new version.
 - Set a required GSEApy version, as newer updates to GSEApy were causing different plot colors and labels
-
+- Added version information for other packages in pyproject as well
 
 ### 1.6.0
 - (Note: skipped 1.5.3 GitHub release to stay consistent with PyPI)
@@ -12,21 +12,20 @@
 - Added unit tests
 - Labeled required and optional parameters in the params.yml file. Some parameters, like the "genelist" parameters in the visualization parameters are required to exist in the params.yml file, but must be left blank if the user does not want to use them (e.g. it will look like "genelist: " instead of "genelist: file.txt")
 
-
-### 1.5.2
+### 1.5.2 [Note: BAD RELEASE, DO NOT USE]
 - Fixed a bug where the incorrect genes are labeled on a volcano plot
 - Fixed a bug where SiSaNA required the "preprocess" parameter to be defined in the params.yml file, even if the user was not running the preprocess step.
 - Added functionality for the modeProcess argument from netZooPy
 - Added functionality for specifiying whether to run PANDA on CPU or GPU
 - Added a hotstart option for the lioness_to_pickle_df.py step, so that if the user has an issue in the "sisana generate" step after network reconstruction, they can jump back into the analysis without needing to re-reconstruct all the networks
 
-### 1.5.1
+### 1.5.1 [Note: BAD RELEASE, DO NOT USE]
 - Added the example Jupyter notebook for clustering
 - Fixed the spacing issue and the text size of the legend in the heatmap step. Note that this fix only works when using a single metadata group (e.g. subtype). Two or more metadata types are still not supported at this time.
 - Added the example output results_summarized.html file to the GitHub repo.
 - Fixed the example file downloads so it downloads from the Kuijjer Lab repo 
 
-### 1.5.0
+### 1.5.0 [Note: BAD RELEASE, DO NOT USE]
 - Added option to run LIONESS on a subset of samples for batching of the "generate" step. PANDA is still ran on all samples, so the same background is used for each batch. 
 - Removed some hard-coded values in volcano plot, so now all user-defined values should work properly
 - Changed the labels on the volcano plot to make it more clear which groups were which
