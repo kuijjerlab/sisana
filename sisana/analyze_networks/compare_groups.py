@@ -93,13 +93,14 @@ def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, 
         # Format the output data frame
         pval_column = testtype + "_pvalue"
         pvaldf = pd.DataFrame({'Target':pval.index, pval_column:pval.values})
-        newpvaldf = pd.DataFrame(pvaldf[pval_column].to_list(), columns=['test_statistic',pval_column])
+        newpvaldf = pd.DataFrame(pvaldf[pval_column].to_list(), columns=['test_statistic', pval_column])
         newpvaldf['Target'] = pval.index
         newpvaldf = newpvaldf.set_index('Target')
         test_stat_column = "test_statistic"
          
     else:
-        compdf.apply(lambda row : calc_tt(row[sampdict[groups[1]]], row[sampdict[groups[0]]], testtype), axis = 1)
+        # Need to calculate Mann-Whitney separately since the test statistic is calculated differently
+        # compdf.apply(lambda row : calc_tt(row[sampdict[groups[1]]], row[sampdict[groups[0]]], testtype), axis = 1)
         # mwu_uval, mwu_pval, mwu_cles = compdf.apply(lambda row : calc_tt(row[sampdict[groups[1]]], row[sampdict[groups[0]]], testtype), axis = 1)
         mwu_calculations = compdf.apply(lambda row : calc_tt(row[sampdict[groups[1]]], row[sampdict[groups[0]]], testtype), axis = 1)
     

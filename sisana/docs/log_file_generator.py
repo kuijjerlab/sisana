@@ -1,7 +1,7 @@
 import sys
 import os
 
-def create_log_file(subcommand: str, params_dict: dict, filenames: list, additional_info=["None"]): 
+def create_log_file(subcommand: str, params_dict: dict, filenames: list, netzoopy_version: str, sisana_version: str, additional_info=["None"]) -> None: 
     """
     Description:
         This function creates log files for each command the user performs
@@ -15,7 +15,7 @@ def create_log_file(subcommand: str, params_dict: dict, filenames: list, additio
         
     Returns:
     -----------
-        - str of the output file location 
+        - Nothing
     """
     os.makedirs("./log_files/", exist_ok=True)
     
@@ -29,6 +29,8 @@ def create_log_file(subcommand: str, params_dict: dict, filenames: list, additio
     
     with open(file_outloc, "w") as file:
         file.write(f"Analysis directory: {os.getcwd()} \n")
+        file.write(f"SiSaNA version: {sisana_version} \n")
+        file.write(f"netZooPy version: {netzoopy_version} \n")
         
         file.write("\nParameters used:\n")
         for k,v in params_dict.items():

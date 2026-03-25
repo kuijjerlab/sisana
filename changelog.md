@@ -1,5 +1,17 @@
-### 1.5.3
+### 1.6.1 (upcoming release)
+- Fixed an issue in the previous release where the older example Zenodo files were installed. The visualization params in this file were incompatible with the new version.
+- Set a required GSEApy version, as newer updates to GSEApy were causing different plot colors and labels
+
+
+### 1.6.0
+- (Note: skipped 1.5.3 GitHub release to stay consistent with PyPI)
+- Corrected the bug introduced in v1.5.0 where the panda output was sorted, then used as input to an unsorted df later on, resulting in incorrect results
 - Fixed a bug where the visualization commands would fail due to incorrect arguments being supllied
+- Added input validation for the params file
+- Added version information to the log files
+- Added unit tests
+- Labeled required and optional parameters in the params.yml file. Some parameters, like the "genelist" parameters in the visualization parameters are required to exist in the params.yml file, but must be left blank if the user does not want to use them (e.g. it will look like "genelist: " instead of "genelist: file.txt")
+
 
 ### 1.5.2
 - Fixed a bug where the incorrect genes are labeled on a volcano plot

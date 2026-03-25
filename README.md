@@ -67,6 +67,11 @@ conda activate </path/to/env-name>
 ```
 pip3 install sisana
 ```
+> [!NOTE]
+> Note: that the files that are installed should be inside your conda directory, with the path 
+> ```
+> </path/to/env-name>/lib/site-packages/sisana/
+>  ```
 
 4. Create a directory for the analysis and move into the analysis directory
 ```
@@ -105,10 +110,14 @@ The most important thing to get right in order to correctly run SiSaNA is the st
 In the below example, the user is running the "preprocess" step of SiSaNA. They have specified the paths to the input files as well as the value for the number of samples a gene must be expressed in (in their case, 5), along with the path to the output directory in which to store their results.
 ![Pipeline overview](docs/params_example_v2.png)
 
+
+> [!IMPORTANT]
+> We are aware of an issue on SiSaNA PyPI v1.5.3 where the error message "KeyError: 'visualize'" appears if the user does not have a "visualize" section in their params.yml file. To address this issue, we are currently implementing a solution in the visualize_bug_fix branch. Alternatively, if you experience this error you can "fix" it by copying and pasting the "visualization" section of the example params file into your own params file (even though the parameter names may not match your own file paths). This error occurs when SiSaNA attempts to access parameters in the "visualize" section of the params file but the visualize section is not present. It should only occur in instances where individuals have deleted sections of the params.yml file that they were not intending to run for their analysis.
+
 # Running SiSaNA
 
 ## Step 1: Pre-processing of data
-The "preprocess" subcommand is the first stage of SiSaNA, where it preprocess the input data to get it in a format that the PANDA and LIONESS algorithms can handle. This will likely involve the removal of genes or transcription factors that are not consistent across files. Information regarding the removal of these factors is given at the end of the preprocessing step.
+The "preprocess" subcommand is the first stage of SiSaNA, where it preprocess the input data to remove genes not expressed in enough samples (as defined by the user). Information regarding the removal of these genes is given at the end of the preprocessing step.
 
 #### Example command
 ```
@@ -182,7 +191,7 @@ The "visualize" command allows you to visualize the results of your analysis on 
 sisana visualize volcano ./example_inputs/params.yml
 ```
 <p align="center">
-  <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/volcano_plot_adjp_0.25.png" width="500" />
+  <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/sisana_example_volcano_plot_v2.png" width="500" />
 </p>
 
 ...making boxplots or violin plots of expression/degrees...
