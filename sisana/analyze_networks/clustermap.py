@@ -85,12 +85,8 @@ def plot_clustermap(datafile: str, filetype: str, metadata: str, genelist: str, 
     # If user only wants to plot a subset of the samples, remove the unwanted samples from the data and metadata
     if subset_for is not None:
         
-        print(category_column_colors)
-        print(subset_for)
-        sys.exit(0)
-        
         if len(category_column_colors) != len(subset_for):
-            raise Exception("Error: CNSDJVIF")
+            raise Exception("Error: The number of colors you have supplied for the 'category_column_colors' parameter does not match the number of groups you have supplied for the 'subset_for' parameter. Please edit your params.yml file so that these numbers match.")
         
         print(f"Subsetting for the following sample groups:")
         [print(i) for i in subset_for]
@@ -115,7 +111,8 @@ def plot_clustermap(datafile: str, filetype: str, metadata: str, genelist: str, 
     
     # Perform hierarchical clustering
     print("Running linkage. Please be patient as this step may take some time...")
-    Z = linkage(filtered_z, method='ward')
+    
+    Z = linkage(filtered_z.to_numpy(dtype=float), method='ward')
     leaf_order = dendrogram(Z, no_plot=True)['ivl']
     print("linkage calculation finished")
 
@@ -126,8 +123,8 @@ def plot_clustermap(datafile: str, filetype: str, metadata: str, genelist: str, 
     print("Saving z-scores to file...")    
     ordered_df.to_csv(out_filtered_z_path)    
         
-    min_val = np.percentile(filtered_z, 5) # vals will be the 1st and 99th percentile, so extreme (outlier) values will not influence the scale
-    max_val = np.percentile(filtered_z, 95)     
+    # min_val = np.percentile(filtered_z, 5) # vals will be the 1st and 99th percentile, so extreme (outlier) values will not influence the scale
+    # max_val = np.percentile(filtered_z, 95)     
         
     def _create_column_colors(data_df, metadata_df, cat_label_columns, column_colors):
         '''
