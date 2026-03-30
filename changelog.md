@@ -1,4 +1,7 @@
-### 1.6.1 (upcoming release)
+### 1.6.2  (upcoming release)
+- Fixed an issue where the error "ValueError: setting an array element with a sequence." would occur if using newer versions of pandas/NumPy
+
+### 1.6.1
 - Fixed an issue in the previous release where the older example Zenodo files were installed. The visualization params in this file were incompatible with the new version.
 - Set a required GSEApy version, as newer updates to GSEApy were causing different plot colors and labels
 - Added version information for other packages in pyproject as well
