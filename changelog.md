@@ -1,5 +1,6 @@
 ### 1.6.2  (upcoming release)
 - Fixed an issue where the error "ValueError: setting an array element with a sequence." would occur if using newer versions of pandas/NumPy
+- Added a "color" parameter for gsea that will now color the resulting dotplot based on the given color map from https://matplotlib.org/stable/users/explain/colors/colormaps.html
 
 ### 1.6.1
 - Fixed an issue in the previous release where the older example Zenodo files were installed. The visualization params in this file were incompatible with the new version.
