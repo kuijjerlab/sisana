@@ -2,7 +2,7 @@ import yaml
 import argparse
 from importlib.metadata import version
 from sisana.default_parameters import get_default_params 
-from sisana.preprocessing import preprocess_data, validate_user_params, check_for_header, validate_metadata, check_genelist_top, check_ncore_value
+from sisana.preprocessing import preprocess_data, validate_user_params, check_for_header, validate_metadata, check_genelist_top, check_ncore_value, check_no_hyphens_in_group_names
 from sisana.postprocessing import convert_lion_to_pickle, extract_tfs_genes
 # from sisana.postprocessing import convert_lion_to_pickle, extract_tfs_genes, quantile_normalize_edges
 from sisana.analyze_networks import calculate_panda_degree, calculate_lioness_degree, compare_bw_groups, survival_analysis, perform_gsea, plot_volcano, plot_expression_degree, plot_heatmap, plot_clustermap, summarize
@@ -494,6 +494,7 @@ def cli():
         compare_means_params = updated_params['compare']
         
         check_for_header(compare_means_params['datafile'], compare_means_params['filetype'])
+        check_no_hyphens_in_group_names(compare_means_params["mapfile"])        
         validate_metadata(compare_means_params['mapfile'])
 
         outfiles = compare_bw_groups(datafile=compare_means_params["datafile"], 
@@ -521,6 +522,7 @@ def cli():
         outfiles = perform_gsea(genefile=gsea_params["genefile"], 
                         gmtfile=gsea_params["gmtfile"], 
                         geneset=gsea_params["geneset"], 
+                        color=gsea_params["color"],
                         outdir=gsea_params["outdir"])
         
         create_log_file(subcommand="gsea", 
@@ -539,30 +541,32 @@ def cli():
             # check_genelist_top(params, updated_params, "volcano")
             
             volcano_params = updated_params["visualize"]["volcano"]
-            # print(volcano_params)
-            # sys.exit(0)
-            
-            outfiles, down_gene_count, up_gene_count = plot_volcano(statsfile=volcano_params["statsfile"],
+
+            outfiles, down_group, down_gene_count, up_group, up_gene_count = plot_volcano(statsfile=volcano_params["statsfile"],
                          diffcol=volcano_params["diffcol"],
                          adjpcol=volcano_params["adjpcol"],
                          adjpvalthreshold=volcano_params["adjpvalthreshold"],
                          xaxisthreshold=volcano_params["xaxisthreshold"],
+                         groups=volcano_params["groups"],
+                         colors=volcano_params["colors"],
                          difftype=volcano_params["difftype"],
                          genelist=volcano_params["genelist"],
                          outdir=volcano_params["outdir"],
                          numlabels=volcano_params["numlabels"],
                          top=volcano_params["top"])      
             
-            down_gene_str = f"number of genes up in group 1: {down_gene_count}"
-            up_gene_str = f"number of genes up in group 2: {up_gene_count}"
+            down_group_str = f"down_group: {down_group}"
+            up_group_str = f"up_group: {up_group}"
+            down_gene_str = f"number of genes up in {down_group}: {down_gene_count}"
+            up_gene_str = f"number of genes up in {up_group}: {up_gene_count}"
             
-            extra_info_num_genes = [down_gene_str, up_gene_str]
+            extra_info_num_genes = [down_group_str, down_gene_str, up_group_str, up_gene_str]
             
             create_log_file(subcommand="volcano_plot", 
                             params_dict=volcano_params, 
                             netzoopy_version=nzp_version,
                             sisana_version=s_version,
-                            filenames=[outfiles], 
+                            filenames=outfiles, 
                             additional_info=extra_info_num_genes)
                 
         if args.plotchoice == "quantity":  
@@ -591,7 +595,7 @@ def cli():
                             params_dict=quantity_params, 
                             netzoopy_version=nzp_version,
                             sisana_version=s_version,
-                            filenames=[outfiles])               
+                            filenames=outfiles)               
                 
         # For now, the plot_heatmap option is being deprecated for use of the plot_clustermap option instead,
         # as the clustermap option allows for more user control and clustering of patients/parameters
@@ -621,6 +625,7 @@ def cli():
                         genelist=heatmap_params["genelist"],
                         column_cluster=heatmap_params["column_cluster"],
                         row_cluster=heatmap_params["row_cluster"],
+                        data_color=heatmap_params["data_color"],
                         prefix=heatmap_params["prefix"],
                         outdir=heatmap_params["outdir"],
                         plot_gene_names=heatmap_params["plot_gene_names"],
@@ -672,6 +677,7 @@ def cli():
                             alivestatus_colname=compare_survival_params["alivestatus_colname"],
                             days_colname=compare_survival_params["days_colname"],
                             groups=compare_survival_params["groups"],
+                            colors=compare_survival_params["colors"],
                             outdir=compare_survival_params["outdir"],
                             appendname=compare_survival_params["appendname"])
         except:
@@ -681,6 +687,7 @@ def cli():
                             alivestatus_colname=compare_survival_params["alivestatus_colname"],
                             days_colname=compare_survival_params["days_colname"],
                             groups=compare_survival_params["groups"],
+                            colors=compare_survival_params["colors"],
                             outdir=compare_survival_params["outdir"])
         fnames, pval, sig = outfiles[0], outfiles[1], outfiles[2] 
         
@@ -695,7 +702,7 @@ def cli():
                         sisana_version=s_version,
                         netzoopy_version=nzp_version,
                         params_dict=compare_survival_params, 
-                        filenames=[fnames], 
+                        filenames=fnames, 
                         additional_info=extra_info)
 
     # ########################################################
