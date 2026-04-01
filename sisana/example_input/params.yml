@@ -50,7 +50,7 @@ combine:
 compare: 
   datafile: ./example_inputs/lioness_df_indegree_3_decimal_places_subset_200_LumALumB_samps.csv # (Required) Path to the data file (either expression, indegree, or outdegree)
   filetype: csv # (Required) The type of data file ("csv" or "txt" or "tsv") being used
-  mapfile: ./example_inputs/BRCA_TCGA_200_LumA_LumB_samps_mapping_w_header.csv # (Required) Path to the mapping file, which maps sample name (column 1) to sample group (column 2). Assumes file has a header.
+  mapfile: ./example_inputs/BRCA_TCGA_200_LumA_LumB_samps_mapping_w_header.csv # (Required) Path to the mapping file, which maps sample name (column 1) to sample group (column 2). Groups cannot have "-" in the name. Assumes file has a header.
   groups:  # (Required) Names of the two groups (from the second column of mapfile) to be compared. The second group listed will be used as the numerator in the fold change calulation.
     - LumA
     - LumB
@@ -70,6 +70,9 @@ survival:
   groups: # (Required) The names of the two groups (from the metadata file) to compare
     - LumA
     - LumB
+  colors:  # (Required) The colors for each group, in the same order the groups appear in the groups arg. Supports matplotlib named colors (https://matplotlib.org/stable/gallery/color/named_colors.html)
+    - cornflowerblue
+    - orange    
   outdir: ./output/survival/ # (Optional, Default: ./output/survival/) The directory to save the output to
 
 # Stage 4: Perform gene set enrichment analysis (GSEA). Must run "sisana compare means" first
@@ -78,6 +81,7 @@ gsea:
   genefile: ./output/compare_means/comparison_mw_between_LumA_LumB_degree_ranked_mediandiff.rnk # (Required) Path to file (.rnk format, which is two columns, tab delimited, no header) containing the genes and test statistics to do enrichment on. This file is generated with "sisana compare means"
   gmtfile: ./example_inputs/Hallmark.v2023.2.Hs.symbols.gmt # (Required) Path to the gene set file in gmt format
   geneset: Hallmarks # (Required) The gene set type used for gmtfile. This is just a string that gets added to the output file name, so you can describe the specific version used for your GMT file in this name.
+  color: viridis # (Optional, Default: viridis) The color scheme to use for the dot plot (e.g. "Reds", "Blues", "viridis", etc.). See https://matplotlib.org/stable/tutorials/colors/colormaps.html for options.
   outdir: ./output/gsea/ # (Optional, Default: ./output/gsea/) The directory to save the output to
 
 # Stage 4: Visualize the differences between experimental groups. Specify which visualization to perform with "sisana visualize <visualization_type>" command
@@ -88,6 +92,12 @@ visualize:
   volcano: 
     statsfile: ./output/compare_means/comparison_mw_between_LumA_LumB_degree.txt # (Required) Path to TSV file containing the difference in mean/median degree, p-value, and FDR. This file is generated with "sisana compare means".
     diffcol: difference_of_medians_(LumB-LumA) # (Required) The name of the column containing the values for the x-axis. For networks, this should be the difference in median degree between the two groups
+    groups:  # (Required) The names of the groups to plot
+      - LumA
+      - LumB    
+    colors:  # (Required) The colors for each group, in the same order the groups appear in the groups arg. Supports matplotlib named colors (https://matplotlib.org/stable/gallery/color/named_colors.html)
+      - cornflowerblue
+      - orange
     adjpcol: FDR # (Optional, Default: FDR) The name of the column containing the adj. p-value
     xaxisthreshold: 50 # (Optional, Default: 50) Threshold to use for the x-axis (value will also be applied to the negative end of the x axis, meaning a value of 50 really means +/- 50)"
     adjpvalthreshold: 0.25 # (Optional, Default: 0.05) Threshold to use for the adjusted p-value (y-axis)
@@ -128,9 +138,10 @@ visualize:
     genelist: ./example_inputs/heatmap_genes.txt # (Required) .txt file containing a list of genes to plot, must match the name of genes in the datafile. 
     category_label_columns: # (Required) The name of column (category of samples) in the metadata file you wish to use for coloring the columns in the clustermap. The clustermap will be grouped by the first name given, unless column_cluster=True
       - group
-    category_column_colors: # (Required) The matplotlib color codes you wish to use for the sub-category given in category_label_column. For example, a category called "Sex" may want to use ["pink", "blue"] as their colors (though SiSaNA has no way of determining which samples are female or male, so you may need to change the order you give the colors)
+    category_column_colors: # (Required) The matplotlib color codes you wish to use for the sub-category given in category_label_column. For example, a category called "Sex" may want to use "pink" and "blue" as their colors (though SiSaNA has no way of determining which samples are female or male, so you may need to change the order you give the colors)
       - {'LumA': 'cornflowerblue', 
          'LumB': 'orange'}
+    data_color: RdBu_r # (Optional, Default: RdBu_r) The color scheme to use for the dot plot (e.g. "Reds", "Blues", "viridis", etc.). See https://matplotlib.org/stable/tutorials/colors/colormaps.html for options.
     column_cluster: False # (Optional, Default: False) Flag ("True" or "False") for if you wish to perform hierarchical clustering on the columns. If False, then the samples will only be grouped according to the first category in category_label_columns   
     row_cluster: True # (Optional, Default: True) Flag ("True" or "False") for if you wish to perform hierarchical clustering on the genes   
     plot_gene_names: True # (Optional, Default: False) Flag ("True" or "False") for whether to plot the names of the genes on the rows of the heatmap
