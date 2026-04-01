@@ -1,4 +1,5 @@
 import os
+import warnings
 import pandas as pd
 import pickle
 import numpy as np
@@ -7,10 +8,13 @@ import gseapy as gp
 from matplotlib import pyplot as plt
 from pathlib import Path
 
+warnings.simplefilter(action='ignore', category=FutureWarning)
+warnings.simplefilter(action='ignore', category=UserWarning)
+
 __author__ = 'Nolan Newman'
 __contact__ = 'nolankn@uio.no'
     
-def perform_gsea(genefile: str, gmtfile: str, geneset: str, outdir: str):
+def perform_gsea(genefile: str, gmtfile: str, geneset: str, color: str, outdir: str):
     """
     Description:
         This code performs a survival analysis between two user-defined groups and outputs
@@ -22,6 +26,7 @@ def perform_gsea(genefile: str, gmtfile: str, geneset: str, outdir: str):
                          containing the genes and test statistics to do enrichment on
         - gmtfile: str, Path to the gene set file in gmt format
         - geneset: str, The gene set type used for gmtfile
+        - color: str, The color scheme to use for the dot plot (e.g. "Reds", "Blues", "viridis", etc.). See https://matplotlib.org/stable/tutorials/colors/colormaps.html for options.
         - outdir: str, Path to directory to output file to
         
     Returns:
@@ -36,20 +41,18 @@ def perform_gsea(genefile: str, gmtfile: str, geneset: str, outdir: str):
     if not os.path.exists(outdir):
         os.makedirs(outdir)
     
-    rnk = pd.read_csv(genefile, header=None, index_col=0, sep="\t")
-    print("rnk format")
-    print(rnk)
-    
+    # rnk = pd.read_csv(genefile, header=None, index_col=0, sep="\t")
+
     # Run GSEA on a pre-ranked list of genes
     pre_res = gp.prerank(rnk=genefile,
                      gene_sets=gmtfile,
                      threads=4,
                      min_size=5,
                      max_size=1000,
-                     permutation_num=1000, # reduce number to speed up testing
+                     permutation_num=1000,
                      outdir=outdir,
                      seed=6,
-                     verbose=True, # see what's going on behind the scenes
+                     verbose=True,
                     )
     
     pre_res_df = pd.DataFrame(pre_res.res2d)
@@ -71,18 +74,17 @@ def perform_gsea(genefile: str, gmtfile: str, geneset: str, outdir: str):
     
     gsea_plot_name = os.path.join(outdir, f"{file_basename}_GSEA_{geneset}_basic_enrichment_plot.png")
     ax.figure.savefig(gsea_plot_name, bbox_inches = "tight")
-    
+        
     # Plot significant GSEA terms
     from gseapy import dotplot
     ax = dotplot(pre_res.res2d,
                 column="FDR q-val",
                 title=geneset,
-                cmap=plt.cm.viridis,
+                cmap=color,
                 size=10,
                 figsize=(10,20), 
                 cutoff=0.25, 
                 show_ring=False)
-
 
     # Modify the legend to make the text more visible
     legend = ax.get_legend()
@@ -114,6 +116,5 @@ def perform_gsea(genefile: str, gmtfile: str, geneset: str, outdir: str):
 
     print("\nDone!")
     print(f"Files created:\n{res_file_name}\n{gsea_plot_name}\n{dotplot_name_png}\n")
-    print(f"Files created:\n{res_file_name}\n{gsea_plot_name}\n{dotplot_name_pdf}\n")
 
     return([res_file_name, gsea_plot_name, dotplot_name_png])
