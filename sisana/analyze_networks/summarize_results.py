@@ -202,12 +202,16 @@ def summarize(logdir: str):
         
     if 'volcano' in all_analyses_info_dict: 
         volcano_add_info = {key: val for i in all_analyses_info_dict["volcano"]["Additional information"] for key, val in i.items()}    
+        print(f"volcano_add_info: {volcano_add_info}")
+  
+        up_group_key = f"number of genes up in {volcano_add_info['up_group']}"
+        down_group_key = f"number of genes up in {volcano_add_info['down_group']}"
 
         volcano_results = f"""
             <div>
                 <h2>Volcano plot</h2>
                 <p>To interpret this plot, pay attention to the TFs/genes that are colored. These are the genes that are below the <strong>{all_analyses_info_dict["volcano"]["input"]["adjpvalthreshold"]}</strong> FDR threshold and greater (absolute value) than the threshold of <strong>{all_analyses_info_dict["volcano"]["input"]["xaxisthreshold"]}</strong> set for the difference in {all_analyses_info_dict["volcano"]["input"]["difftype"]} degree. These may be genes that are important in distinguishing your two groups from one another.</p>
-                <p>There are <strong>{volcano_add_info["number of genes up in group 1"]}</strong> higher in LumA and <strong>{volcano_add_info["number of genes up in group 2"]}</strong> genes higher in LumB.</p>
+                <p>There are <strong>{volcano_add_info[up_group_key]}</strong> genes higher in {volcano_add_info['up_group']} and <strong>{volcano_add_info[down_group_key]}</strong> genes higher in {volcano_add_info['down_group']}.</p>
 
                 {_create_img_tag(all_analyses_info_dict["volcano"])}
             </div>
