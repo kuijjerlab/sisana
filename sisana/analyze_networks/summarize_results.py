@@ -202,7 +202,6 @@ def summarize(logdir: str):
         
     if 'volcano' in all_analyses_info_dict: 
         volcano_add_info = {key: val for i in all_analyses_info_dict["volcano"]["Additional information"] for key, val in i.items()}    
-        print(f"volcano_add_info: {volcano_add_info}")
   
         up_group_key = f"number of genes up in {volcano_add_info['up_group']}"
         down_group_key = f"number of genes up in {volcano_add_info['down_group']}"
@@ -258,4 +257,4 @@ def summarize(logdir: str):
     with open(file_name, "w", encoding="utf-8") as f:
         f.write(html_content)
         
-    print(f"Results have been summarized in {file_name}")
+    print(f"\nResults have been summarized in {file_name}\n")
