@@ -110,10 +110,6 @@ The most important thing to get right in order to correctly run SiSaNA is the st
 In the below example, the user is running the "preprocess" step of SiSaNA. They have specified the paths to the input files as well as the value for the number of samples a gene must be expressed in (in their case, 5), along with the path to the output directory in which to store their results.
 ![Pipeline overview](docs/params_example_v2.png)
 
-
-> [!IMPORTANT]
-> We are aware of an issue on SiSaNA PyPI v1.5.3 where the error message "KeyError: 'visualize'" appears if the user does not have a "visualize" section in their params.yml file. To address this issue, we are currently implementing a solution in the visualize_bug_fix branch. Alternatively, if you experience this error you can "fix" it by copying and pasting the "visualization" section of the example params file into your own params file (even though the parameter names may not match your own file paths). This error occurs when SiSaNA attempts to access parameters in the "visualize" section of the params file but the visualize section is not present. It should only occur in instances where individuals have deleted sections of the params.yml file that they were not intending to run for their analysis.
-
 # Running SiSaNA
 
 ## Step 1: Pre-processing of data
