@@ -4,7 +4,7 @@
 - Added a "color" parameter for gsea that will now color the resulting dotplot based on the given color map from https://matplotlib.org/stable/users/explain/colors/colormaps.html
 - Added a "colors" parameter for the volcano plot to specify the colors used in the plot
 - Added a "colors" parameter for the survival plot to specify the colors for the lines
-- Visualize commands now output a pickled file containing the plot(s) created in that step, so advanced users can import them into python and modify them
+- Visualize and survival commands now output a pickled file containing the plot(s) created in that step, so advanced users can import them into python and modify them
 
 ### 1.6.1
 - Fixed an issue in the previous release where the older example Zenodo files were installed. The visualization params in this file were incompatible with the new version.
