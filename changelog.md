@@ -1,4 +1,12 @@
-### 1.6.1 (upcoming release)
+### 1.6.2  (upcoming release)
+- Fixed an issue where the error "ValueError: setting an array element with a sequence." would reportedly occur for some users if using newer versions of pandas/NumPy
+- Added a "data_color" parameter for the heatmap so the user can choose the color map to use for the heatmap (based on the given color map from https://matplotlib.org/stable/users/explain/colors/colormaps.html)
+- Added a "color" parameter for gsea that will now color the resulting dotplot based on the given color map from https://matplotlib.org/stable/users/explain/colors/colormaps.html
+- Added a "colors" parameter for the volcano plot to specify the colors used in the plot
+- Added a "colors" parameter for the survival plot to specify the colors for the lines
+- Visualize and survival commands now output a pickled file containing the plot(s) created in that step, so advanced users can import them into python and modify them
+
+### 1.6.1
 - Fixed an issue in the previous release where the older example Zenodo files were installed. The visualization params in this file were incompatible with the new version.
 - Set a required GSEApy version, as newer updates to GSEApy were causing different plot colors and labels
 - Added version information for other packages in pyproject as well
