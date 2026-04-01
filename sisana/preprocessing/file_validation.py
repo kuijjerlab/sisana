@@ -64,7 +64,7 @@ def validate_user_params(params_dict, command, subcommand=None):
         outdir: ./output/compare_means/"""
     
     params["survival"] = {}
-    params["survival"]["required"] = ["metadata", "filetype", "sampgroup_colname", "alivestatus_colname", "days_colname", "groups"]
+    params["survival"]["required"] = ["metadata", "filetype", "sampgroup_colname", "alivestatus_colname", "days_colname", "groups", "colors"]
     params["survival"]["optional"] = ["outdir"]
     params["survival"]["example"] = """
     survival:
@@ -80,7 +80,7 @@ def validate_user_params(params_dict, command, subcommand=None):
     
     params["gsea"] = {}
     params["gsea"]["required"] = ["genefile", "gmtfile", "geneset"]
-    params["gsea"]["optional"] = ["outdir"]
+    params["gsea"]["optional"] = ["color", "outdir"]
     params["gsea"]["example"] = """
     gsea:
         genefile: ./output/compare_means/comparison_mw_between_LumA_LumB_degree_ranked_mediandiff.rnk
@@ -89,7 +89,7 @@ def validate_user_params(params_dict, command, subcommand=None):
         outdir: ./output/gsea/"""
     
     params["volcano"] = {}
-    params["volcano"]["required"] = ["statsfile", "diffcol", "top", "genelist"]
+    params["volcano"]["required"] = ["statsfile", "diffcol", "top", "genelist", "groups", "colors"]
     params["volcano"]["optional"] = ["adjpcol", "xaxisthreshold", "adjpvalthreshold", "difftype", "outdir", "numlabels"]
     params["volcano"]["example"] = """
     visualize:
@@ -129,7 +129,7 @@ def validate_user_params(params_dict, command, subcommand=None):
     
     params["heatmap"] = {}
     params["heatmap"]["required"] = ["datafile", "filetype", "statsfile", "metadata", "genelist", "category_label_columns", "category_column_colors"]
-    params["heatmap"]["optional"] = ["column_cluster", "row_cluster", "plot_gene_names", "plot_sample_names", "outdir", "prefix", "subset_for"]
+    params["heatmap"]["optional"] = ["column_cluster", "row_cluster", "plot_gene_names", "plot_sample_names", "outdir", "prefix", "subset_for", "data_color"]
     params["heatmap"]["example"] = """
     visualize:
         heatmap: 
@@ -203,12 +203,12 @@ def validate_user_params(params_dict, command, subcommand=None):
                 
         if not_supplied_req_params: # if list is not empty
             raise Exception(f"""
-    Error: You are missing the following required {com} parameters in your params file: {', '.join(not_supplied_req_params)}
-    
-    Please ensure they there and their spelling is correct.
-    
-    Please see the following for an example:
-    {params[com]["example"]}""")
+                    Error: You are missing the following required {com} parameters in your params file: {', '.join(not_supplied_req_params)}
+                    
+                    Please ensure they there and their spelling is correct.
+                    
+                    Please see the following for an example:
+                    {params[com]["example"]}""")
             
         # Check to see if optional params are valid param options
         unrecognized_opt_params = []
@@ -398,3 +398,24 @@ def check_genelist_top(user_params, updated_params_w_def, com):
     
     # print("Visualization parameters appear fine. Continuing...")
     # # sys.exit(0)
+    
+def check_no_hyphens_in_group_names(mapfile: str):
+    """
+    Description:
+        Checks to make sure that none of the group names contain hyphens, as this can cause issues with downstream analysis.
+     
+    Parameters:
+    -----------  
+        - mapfile: str, the path to the metadata file that contains the group names in the second column. The first column should be sample names and the file should have a header.
+        
+    Returns:
+    -----------
+        - Nothing
+    """
+    
+    meta = pd.read_csv(mapfile, sep=",", index_col=0)
+    
+    for groupname in list(meta.iloc[:, 0]):
+        if "-" in groupname:
+            raise ValueError(f"Group name '{groupname}' contains a hyphen, which is not allowed.")
+    print("Group names in mapping file appear valid. Continuing...")
