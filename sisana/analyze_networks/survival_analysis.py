@@ -13,7 +13,7 @@ __author__ = 'Nolan Newman'
 __contact__ = 'nolankn@uio.no'
     
 def survival_analysis(metadata, filetype: str, sampgroup_colname: str, alivestatus_colname: str, 
-                      days_colname: str, groups: list, outdir: str, appendname=""):
+                      days_colname: str, groups: list, colors: list, outdir: str, appendname=""):
     """
     Description:
         This code performs a survival analysis between two user-defined groups and outputs
@@ -27,10 +27,11 @@ def survival_analysis(metadata, filetype: str, sampgroup_colname: str, alivestat
         - alivestatus_colname: str, Name of column that contains the status of the individual. Must contain True/False values only, where True = dead (event occurred) and False = alive.
         - days_colname: str, Name of column containing either the number of days an individual survived or the number of days to the last follow up.
         - groups: str, The names of the two groups (from the metadata file) to compare
+        - colors: list, The colors for each group, in the same order the groups appear in the groups arg. Supports matplotlib named colors (https://matplotlib.org/stable/gallery/color/named_colors.html)
         - outdir: str, The directory to save the output to
         - appendname: str, Optional; A name to append to the end of the base file name of the output file. Example: group1_v_group2_survival_plot_{appendname}.png
         
-    Returns:
+    Returns:s
     -----------
         - list: [output file path (str), p-value (float), and whether result is "significant" or "non-significant" (str)]
 
@@ -49,7 +50,7 @@ def survival_analysis(metadata, filetype: str, sampgroup_colname: str, alivestat
     import matplotlib.pyplot as plt
     from sksurv.nonparametric import kaplan_meier_estimator
 
-    for treatment_type in (groups[0], groups[1]):
+    for i, treatment_type in enumerate((groups[0], groups[1])):
         mask_treat = meta[sampgroup_colname] == treatment_type
 
         time_treatment, survival_prob_treatment, conf_int = kaplan_meier_estimator(
@@ -57,9 +58,11 @@ def survival_analysis(metadata, filetype: str, sampgroup_colname: str, alivestat
             meta[days_colname][mask_treat],
             conf_type="log-log",
         )
+        
+        color = colors[i]  
 
-        plt.step(time_treatment, survival_prob_treatment, where="post", label=f"{treatment_type} (n = {mask_treat.sum()})")
-        plt.fill_between(time_treatment, conf_int[0], conf_int[1], alpha=0.25, step="post")
+        plt.step(time_treatment, survival_prob_treatment, where="post", label=f"{treatment_type} (n = {mask_treat.sum()})", color=color)
+        plt.fill_between(time_treatment, conf_int[0], conf_int[1], alpha=0.25, step="post", color=color)
 
     # Take just the survival status and the time columns and create a structured array for the survival analysis
     small_meta = meta[meta[sampgroup_colname].isin(groups)]
@@ -94,12 +97,19 @@ def survival_analysis(metadata, filetype: str, sampgroup_colname: str, alivestat
     else:
         outfile_name = f"{outdir_path}/{groups[0]}_v_{groups[1]}_survival_plot.png"
         
+    outname_pickle = f"{outfile_name[:-4]}.pickle"
+
     plt.savefig(outfile_name)
+    with open(outname_pickle, 'wb') as file:
+        pickle.dump(plt.gcf(), file)
+    
     print(f"\nFile saved: {outfile_name}")
+    print(f"File saved: {outname_pickle}")
             
     plt.close()
+    outfiles = [outfile_name, outname_pickle]
     
-    return(outfile_name, pvalue, signif)
+    return(outfiles, pvalue, signif)
   
 
 

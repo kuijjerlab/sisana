@@ -9,6 +9,7 @@ import matplotlib
 import warnings
 from .analyze import WrongAmountOfColorsError
 from typing import Optional
+import pickle
 
 def pnq(obj): # for debugging purposes 
     print(obj)
@@ -16,9 +17,9 @@ def pnq(obj): # for debugging purposes
     
 sys.setrecursionlimit(100000) # Required or else an error can occur where a maximum recursion limit is reached in scipy's hierarchy.py script (which is used by seaborn's matrix.py script)
       
-def plot_clustermap(datafile: str, filetype: str, metadata: str, genelist: str, column_cluster: bool,
-                 row_cluster: bool, prefix: str, outdir: str, plot_gene_names: bool, plot_sample_names: bool, top: bool=True, 
-                 category_label_columns: list=[], category_column_colors: list=[], statsfile: str="", subset_for: Optional[str]=None):
+def plot_clustermap(datafile: str, filetype: str, metadata: str, genelist: str, column_cluster: bool, row_cluster: bool, 
+                    data_color: str, prefix: str, outdir: str, plot_gene_names: bool, plot_sample_names: bool, top: bool=True, 
+                    category_label_columns: list=[], category_column_colors: list=[], statsfile: str="", subset_for: Optional[str]=None):
     '''
     Description:
         This code creates a heatmap of either the expression or degrees from LIONESS networks
@@ -212,7 +213,7 @@ def plot_clustermap(datafile: str, filetype: str, metadata: str, genelist: str, 
     df_for_plotting = df_for_plotting.set_index('index')
     
     sns_plot = sns.clustermap(df_for_plotting, col_colors=col_colors_df, z_score=None, row_cluster=row_cluster, col_cluster=column_cluster, 
-                              dendrogram_ratio=0.05, vmin = -2, vmax = 2, cmap = matplotlib.colormaps['RdBu_r'], cbar_kws=cbar_kws, cbar_pos=cbar_pos,
+                              dendrogram_ratio=0.05, vmin=-2, vmax=2, cmap=data_color, cbar_kws=cbar_kws, cbar_pos=cbar_pos,
                               xticklabels=plot_sample_names, yticklabels=plot_gene_names)
 
     # Add legend to plot
@@ -275,13 +276,21 @@ def plot_clustermap(datafile: str, filetype: str, metadata: str, genelist: str, 
     # Change color bar tick label size
     for tick in sns_plot.cax.get_yticklabels():  # Access the y-tick labels of the color bar
         tick.set_fontsize(16)  # Set font size for y-tick labels (color bar)
-        
-    outname = os.path.join(outdir, f"{prefix}_heatmap.png")
-    sns_plot.savefig(outname, dpi = 300, bbox_inches='tight')
     
-    outfiles = [outname, out_filtered_z_path]
+    outname = os.path.join(outdir, f"{prefix}_heatmap.png")
+    outname_pdf = outname[:-4] + ".pdf"
+    outname_pickle = os.path.join(outdir, f"{prefix}_heatmap.pickle")
+
+    sns_plot.savefig(outname, dpi = 300, bbox_inches='tight')
+    sns_plot.savefig(outname_pdf, dpi = 300, bbox_inches='tight', format="pdf")
+    with open(outname_pickle, 'wb') as file:
+        pickle.dump(sns_plot, file)
+        
+    outfiles = [outname, outname_pdf, outname_pickle, out_filtered_z_path]
     
     print(f"\nFile created: {outname}")
+    print(f"File created: {outname_pdf}")
+    print(f"File created: {outname_pickle}")
     print(f"File created: {out_filtered_z_path}")
 
     # Save the order of rows if desired, so that the same order can be applied on another dataset

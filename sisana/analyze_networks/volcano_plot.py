@@ -1,3 +1,4 @@
+import pickle
 import pandas as pd
 import sys
 from pathlib import Path
@@ -10,7 +11,7 @@ import warnings
 from typing import Optional
 
 def plot_volcano(statsfile: str, diffcol: str, adjpcol: str, adjpvalthreshold: str, xaxisthreshold: float,  difftype: str,
-                 outdir: str, top: bool=True, numlabels: int=15, genelist: Optional[str]=None):
+                 outdir: str, groups: list, colors: list, top: bool=True, numlabels: int=15, genelist: Optional[str]=None):
     """
     Description:
         This code performs a survival analysis between two user-defined groups and outputs
@@ -44,6 +45,16 @@ def plot_volcano(statsfile: str, diffcol: str, adjpcol: str, adjpvalthreshold: s
     # args = parser.parse_args()
     stats = pd.read_csv(statsfile, index_col = 0, sep = "\t")    
     
+    # Find the group names from the diffcol name, which should be in the format "difference_of_medians_(group1-group2)" or "difference_of_means_(group1-group2)"
+    group_names = diffcol.split("(")[1].strip(")").split("-")
+    up_group = group_names[0]
+    down_group = group_names[1]
+
+    user_supplied_color_dict = {groups[0]: colors[0], groups[1]: colors[1]}
+    
+    up_group_color = user_supplied_color_dict[up_group]
+    down_group_color = user_supplied_color_dict[down_group]
+
     # Create initial plot 
     plt.figure(figsize=(6, 6), dpi = 1200) 
     plt.scatter(x=stats[diffcol],y=stats[adjpcol].apply(lambda x:-np.log10(x)), s=1)
@@ -63,8 +74,8 @@ def plot_volcano(statsfile: str, diffcol: str, adjpcol: str, adjpvalthreshold: s
 
     group_names = diffcol.split("(")[1].strip(")").split("-")
 
-    plt.scatter(x=down[diffcol], y=down[adjpcol].apply(lambda x:-np.log10(x)), s=3, label=f"Higher in {group_names[1]}", color="blue")
-    plt.scatter(x=up[diffcol], y=up[adjpcol].apply(lambda x:-np.log10(x)), s=3, label=f"Higher in {group_names[0]}", color="orange")
+    plt.scatter(x=down[diffcol], y=down[adjpcol].apply(lambda x:-np.log10(x)), s=3, label=f"Higher in {down_group}", color=down_group_color)
+    plt.scatter(x=up[diffcol], y=up[adjpcol].apply(lambda x:-np.log10(x)), s=3, label=f"Higher in {up_group}", color=up_group_color)
     plt.scatter(x=notsig[diffcol], y=notsig[adjpcol].apply(lambda x:-np.log10(x)), s=3, label="Not significant", color="gainsboro")
     plt.scatter(x=not_down_or_up[diffcol], y=not_down_or_up[adjpcol].apply(lambda x:-np.log10(x)), s=3, color="gainsboro")
 
@@ -133,11 +144,22 @@ def plot_volcano(statsfile: str, diffcol: str, adjpcol: str, adjpvalthreshold: s
     
     if not top:
         outname = os.path.join(outdir, f"volcano_plot_adjp_{adjpvalthreshold}.png")
+        outname_pickle = os.path.join(outdir, f"volcano_plot_adjp_{adjpvalthreshold}.pickle")
+
     else:
         outname = os.path.join(outdir, f"volcano_plot_adjp_{adjpvalthreshold}_top_{numlabels}.png")
+        outname_pickle = os.path.join(outdir, f"volcano_plot_adjp_{adjpvalthreshold}_top_{numlabels}.pickle")
+
+    outname_pdf = outname[:-4] + ".pdf"
     plt.savefig(outname)
+    plt.savefig(outname_pdf, format="pdf")
+    with open(outname_pickle, 'wb') as file:
+        pickle.dump(plt.gcf(), file)
         
+    outfiles = [outname, outname_pdf, outname_pickle]
     print(f"File saved: {outname}")     
-    
-    return(outname, num_down_genes, num_up_genes)
+    print(f"File saved: {outname_pdf}")     
+    print(f"File saved: {outname_pickle}")
+
+    return(outfiles, down_group, num_down_genes, up_group, num_up_genes)
     
