@@ -44,8 +44,9 @@ def get_default_params():
     def_survival["outdir"] = "./output/survival/"  
 
     def_params["gsea"] = {}
-    def_survival = def_params["gsea"]  
-    def_survival["outdir"] = "./output/gsea/"  
+    def_gsea = def_params["gsea"]
+    def_gsea["color"] = "viridis"
+    def_gsea["outdir"] = "./output/gsea/"  
 
     def_params["visualize"] = {}
     def_params["visualize"]["volcano"] = {}
@@ -72,6 +73,7 @@ def get_default_params():
     def_heatmap["plot_sample_names"] = False
     def_heatmap["outdir"] = "./output/heatmap/"
     def_heatmap["prefix"] = "results"
+    def_heatmap["data_color"] = "RdBu_r"
     def_heatmap["subset_for"] = None
     # def_heatmap["top"] = True    
 
