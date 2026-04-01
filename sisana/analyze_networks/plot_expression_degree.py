@@ -77,7 +77,7 @@ def plot_expression_degree(datafile: str, filetype: str, statsfile: str, metadat
     # If the user has supplied the gene list, plot just the genes they supplied. Otherwise, plot the top genes based on FDR and fold change
     if genelist is not None:
         # Filter the data frame containing the degree/expression values for just the genes in the supplied gene list
-        filtered_indata_genelist = filter_for_user_defined_genes(datafile=indata, genes=user_gene_list)
+        filtered_indata_genelist = filter_for_user_defined_genes(datafile=indata, genes=user_gene_list, verbose=False)
         # filtered_indata_genelist = indata.loc[:,user_gene_list]
         filtered_indata_genelist = filtered_indata_genelist # Need to transform here, do not remove without testing
 
@@ -217,8 +217,16 @@ def plot_expression_degree(datafile: str, filetype: str, statsfile: str, metadat
     
     if top == True: 
         outname = f"{outname[:-4]}_top_{numgenes}.png"
+        outname_pickle = f"{outname[:-4]}_top_{numgenes}.pickle"
+    else:
+        outname_pickle = f"{outname[:-4]}.pickle"
         
     plt.savefig(outname)
-    print(f"\nFile saved: {outname}\n")
+    with open(outname_pickle, 'wb') as file:
+        pickle.dump(plt.gcf(), file)
+
+    print(f"\nFile saved: {outname}")
+    print(f"File saved: {outname_pickle}\n")
     
-    return(outname)
+    outfiles = [outname, outname_pickle]
+    return(outfiles)
