@@ -127,11 +127,11 @@ Three files, one for each of the three filtered input files.
 
 
 ## Step 2: Reconstruction and analysis of networks
-This second SiSaNA stage, "generate", uses the PANDA and LIONESS algorithms of netZooPy to reconstruct gene regulatory networks. Documentation for netZooPy can be found at https://github.com/netZoo/netZooPy/tree/master. It then performs basic analyses of these networks by calculating in-degree of genes (also called gene targeting scores) and out-degree of transcription factors (TFs).
+This second SiSaNA stage, "reconstruct", uses the PANDA and LIONESS algorithms of netZooPy to reconstruct gene regulatory networks. Documentation for netZooPy can be found at https://github.com/netZoo/netZooPy/tree/master. It then performs basic analyses of these networks by calculating in-degree of genes (also called gene targeting scores) and out-degree of transcription factors (TFs).
 
 #### Example command
 ```
-sisana generate ./example_inputs/params.yml
+sisana reconstruct ./example_inputs/params.yml
 ```
 
 #### Outputs
