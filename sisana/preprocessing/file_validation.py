@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 import sys
+from sisana.exceptions import NumColorsNumGroupsMismatchError, TooManyCoresError
 
 def validate_user_params(params_dict, command, subcommand=None):
     """
@@ -13,7 +14,7 @@ def validate_user_params(params_dict, command, subcommand=None):
     Parameters:
     -----------
         - params_dict: Dict, the params dictionary read in previously from the user's params file
-        - command: the command the user is running (preprocess, generate, etc.)
+        - command: the command the user is running (preprocess, reconstruct, etc.)
         - subcommand: the command the user is running (only if running the visualize command)
     Returns:
     -----------
@@ -32,11 +33,11 @@ def validate_user_params(params_dict, command, subcommand=None):
         number: 5 
         outdir: ./output/preprocess"""    
     
-    params["generate"] = {} 
-    params["generate"]["required"] = ["exp", "motif", "ppi"]
-    params["generate"]["optional"] = ["method", "modeProcess", "pandafilepath", "compute", "ncores", "lionessfilepath", "start", "end"]
-    params["generate"]["example"] = """
-    generate:
+    params["reconstruct"] = {} 
+    params["reconstruct"]["required"] = ["exp", "motif", "ppi"]
+    params["reconstruct"]["optional"] = ["method", "modeProcess", "pandafilepath", "compute", "ncores", "lionessfilepath", "start", "end"]
+    params["reconstruct"]["example"] = """
+    reconstruct:
         exp: ./output/preprocess/BRCA_TCGA_20_LumA_LumB_samps_5000_genes_exp_preprocessed.txt
         motif: ./example_inputs/motif_prior_names_2024.tsv
         ppi: ./example_inputs/ppi_prior_2024.tsv 
@@ -166,6 +167,8 @@ def validate_user_params(params_dict, command, subcommand=None):
         if command not in list(params_dict.keys()):
             raise Exception(f"Error: There is no {command} command present in your params file. Please ensure it is there and that the spelling is correct.")
     else:
+        if subcommand is None:
+            raise Exception(f"Error: You are running the visualize command, but you have not specified a subcommand (heatmap, volcano, or quantity) in your params file. Please ensure you have specified one of these subcommands and that the spelling is correct.")
         if "visualize" not in list(params_dict.keys()):
             raise Exception(f"Error: There is no visualize command present in your params file. Please ensure it is there and that the spelling is correct.")
         if subcommand not in list(params_dict["visualize"].keys()):
@@ -179,7 +182,7 @@ def validate_user_params(params_dict, command, subcommand=None):
         Parameters:
         -----------     
             - user_params: dict, a dictionary of the parameters the user has set in their yaml file
-            - com: str, the subcommand the user is running (preprocess, generate, etc.)
+            - com: str, the subcommand the user is running (preprocess, reconstruct, etc.)
             - required_params_list: list, list of required parameters for that command
             - optional_params_list: list, list of optional parameters for that command
         
@@ -205,7 +208,7 @@ def validate_user_params(params_dict, command, subcommand=None):
             raise Exception(f"""
                     Error: You are missing the following required {com} parameters in your params file: {', '.join(not_supplied_req_params)}
                     
-                    Please ensure they there and their spelling is correct.
+                    Please ensure they are there and their spelling is correct.
                     
                     Please see the following for an example:
                     {params[com]["example"]}""")
@@ -222,8 +225,8 @@ def validate_user_params(params_dict, command, subcommand=None):
     
     if command == "preprocess":
         _validate_required_params(params_dict, "preprocess", params["preprocess"]["required"], params["preprocess"]["optional"])
-    if command == "generate":
-        _validate_required_params(params_dict, "generate", params["generate"]["required"], params["generate"]["optional"])
+    if command == "reconstruct":
+        _validate_required_params(params_dict, "reconstruct", params["reconstruct"]["required"], params["reconstruct"]["optional"])
     if command == "compare":
         _validate_required_params(params_dict, "compare", params["compare"]["required"], params["compare"]["optional"])
     if command == "survival":
@@ -240,7 +243,7 @@ def validate_user_params(params_dict, command, subcommand=None):
     if command == "extract":
         _validate_required_params(params_dict, "extract", params["extract"]["required"], params["extract"]["optional"])
             
-    print("Params file structure appears valid. Continuing...")
+    print("Params file contains validly named parameters. Continuing...")
     
 def check_for_header(df, delim):
     """
@@ -301,8 +304,8 @@ def check_ncore_value(requested_cores):
         nsamps = int(f.read())
             
     if int(requested_cores) > nsamps:
-        raise Exception(f"Error: You have requested more cores ({requested_cores}) than you have samples ({nsamps}). Please ensure 'ncores' <= number of samples.") 
-            
+        raise TooManyCoresError(requested_cores, nsamps)
+
 def validate_metadata(df):
     """
     Description:
@@ -337,7 +340,7 @@ def check_genelist_top(user_params, updated_params_w_def, com):
     -----------  
         - user_params: dict, the params dict from the user's params yaml file 
         - updated_params_w_def: dict, the updated params dict (after filling in non-required default values)   
-        - com: str, the subcommand the user is running (preprocess, generate, etc.)
+        - com: str, the subcommand the user is running (preprocess, reconstruct, etc.)
         
     Returns:
     -----------
@@ -419,3 +422,20 @@ def check_no_hyphens_in_group_names(mapfile: str):
         if "-" in groupname:
             raise ValueError(f"Group name '{groupname}' contains a hyphen, which is not allowed.")
     print("Group names in mapping file appear valid. Continuing...")
+    
+def check_num_group_colors(user_params: dict, com: str):
+    """
+    Description:
+        Checks to make sure that the number of groups in the metadata file matches the number of color codes provided.
+     
+    Parameters:
+    -----------  
+        - user_params: dict, the user-defined parameters for the visualization step.
+        - com: str, the subcommand the user is running (e.g. volcano, quantity, heatmap)
+        
+    Returns:
+    -----------
+        - Nothing
+    """
+    if len(user_params["visualize"][com]["groups"]) != len(user_params["visualize"][com]["colors"]):
+        raise NumColorsNumGroupsMismatchError("groups", "colors", len(user_params["visualize"][com]["groups"]), len(user_params["visualize"][com]["colors"]))

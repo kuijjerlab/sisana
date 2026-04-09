@@ -35,7 +35,7 @@ def summarize(logdir: str):
         def __populate_analysis_info_dict(yaml_file: dict, analysis_info_dict: dict, analysis_type: str):
             """
             Description:
-                Creates a dictionary keyed on analysis type (preprocess, generate, etc.) and with
+                Creates a dictionary keyed on analysis type (preprocess, reconstruct, etc.) and with
                 values of the input, output, and additional info (if additional info was returned)
                 by the analysis function previously. Note that the structure of this created dict
                 is similar to the input yaml_file, but the input does not contain the keys based on
@@ -44,13 +44,13 @@ def summarize(logdir: str):
             Parameters:
             -----------
                 - yaml_file: str, yaml object that includes the read-in log yaml file
-                - analysis_info_dict: dict, keyed on analysis type (preprocess, generate, etc.) and with
+                - analysis_info_dict: dict, keyed on analysis type (preprocess, reconstruct, etc.) and with
                   values of the input, output, and additional info
                 - analysis_type: str, 
 
             Returns:
             -----------
-                - dictionary keyed on analysis type (preprocess, generate, etc.) and with values of the 
+                - dictionary keyed on analysis type (preprocess, reconstruct, etc.) and with values of the 
                   input, output, and additional info
             """
             analysis_info_dict[analysis_type] = {}

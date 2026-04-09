@@ -2,11 +2,12 @@ import yaml
 import argparse
 from importlib.metadata import version
 from sisana.default_parameters import get_default_params 
-from sisana.preprocessing import preprocess_data, validate_user_params, check_for_header, validate_metadata, check_genelist_top, check_ncore_value, check_no_hyphens_in_group_names
+from sisana.exceptions import *
+from sisana.preprocessing import preprocess_data, validate_user_params, check_for_header, validate_metadata, check_genelist_top, check_ncore_value, check_no_hyphens_in_group_names, check_num_group_colors
 from sisana.postprocessing import convert_lion_to_pickle, extract_tfs_genes
 # from sisana.postprocessing import convert_lion_to_pickle, extract_tfs_genes, quantile_normalize_edges
 from sisana.analyze_networks import calculate_panda_degree, calculate_lioness_degree, compare_bw_groups, survival_analysis, perform_gsea, plot_volcano, plot_expression_degree, plot_heatmap, plot_clustermap, summarize
-from sisana.generate import make_panda_network, make_lioness_networks
+from sisana.reconstruct import make_panda_network, make_lioness_networks
 from sisana.example_input import find_example_paths, fetch_files
 import sisana.docs
 from sisana.docs import create_log_file
@@ -25,9 +26,9 @@ def cli():
 
     DESCRIPTION = """
     SiSaNA - Single Sample Network Analysis
-    A command line interface tool used to generate and analyze 
+    A command line interface tool used to reconstruct and analyze 
     PANDA and LIONESS networks. It works through subcommands. 
-    The command 'sisana generate -p params.yaml', for example,
+    The command 'sisana reconstruct params.yaml', for example,
     will reconstruct a PANDA or LIONESS network, using the parameters 
     set in the params.yaml file.
     Developed by Nolan Newman (nolan.newman@ncmm.uio.no).
@@ -46,7 +47,7 @@ def cli():
     # Add subcommands
     subparsers = parser.add_subparsers(title='Subcommands', dest='command')
     pre = subparsers.add_parser('preprocess', help='Filters expression data for parameters (e.g. genes) that are only present in at least m samples. Also filters each input file so they have the same genes and TFs across each', epilog=sisana.docs.preprocess_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
-    gen = subparsers.add_parser('generate', help='Generates PANDA and LIONESS networks', epilog=sisana.docs.generate_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
+    rec = subparsers.add_parser('reconstruct', help='reconstructs PANDA and LIONESS networks', epilog=sisana.docs.reconstruct_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
     comb = subparsers.add_parser('combine', help='Combines indegree and outdegree files ran in batches', epilog=sisana.docs.combine_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
     ext = subparsers.add_parser('extract', help='Extract edges connected to specified TFs/genes', epilog=sisana.docs.extract_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
     comp = subparsers.add_parser('compare', help='Compare networks between sample groups', epilog=sisana.docs.compare_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -58,10 +59,10 @@ def cli():
     # options for preprocess subcommand
     pre.add_argument("params", type=str, help='Path to yaml file containing the parameters to use')
         
-    # options for generate subcommand    
-    gen.add_argument("params", type=str, help='Path to yaml file containing the parameters to use')
+    # options for reconstruct subcommand    
+    rec.add_argument("params", type=str, help='Path to yaml file containing the parameters to use')
 
-    # options for generate subcommand    
+    # options for combine subcommand    
     comb.add_argument("params", type=str, help='Path to yaml file containing the parameters to use')
 
     # options for extract subcommand
@@ -78,7 +79,7 @@ def cli():
     gsea.add_argument("params", type=str, help='Path to yaml file containing the parameters to use')
 
     # options for visualize subcommand
-    vis.add_argument("plotchoice", type=str, choices = ["all", "quantity", "heatmap", "volcano"], nargs='?', default="all", help="The type of plot to create")   
+    vis.add_argument("plotchoice", type=str, choices = ["quantity", "heatmap", "volcano"], nargs='?', help="The type of plot to create")   
     vis.add_argument("params", type=str, help='Path to yaml file containing the parameters to use')
     
     # options for summarize subcommand    
@@ -150,7 +151,7 @@ def cli():
 
     updated_params = {}
     
-    single_dict_keys = ["preprocess", "generate", "combine", "compare", "survival", "gsea", "extract"]
+    single_dict_keys = ["preprocess", "reconstruct", "combine", "compare", "survival", "gsea", "extract"]
     nested_dict_keys = ["volcano", "quantity", "heatmap"]
 
     for key in single_dict_keys:
@@ -205,27 +206,27 @@ def cli():
     # 2) Run PANDA/LIONESS, using the parameters from the yaml file
     ########################################################
 
-    if args.command == 'generate':
+    if args.command == 'reconstruct':
         
-        generate_params = updated_params['generate']
-        if generate_params["method"] == "lioness":
-            check_ncore_value(generate_params["ncores"])
+        reconstruct_params = updated_params['reconstruct']
+        if reconstruct_params["method"] == "lioness":
+            check_ncore_value(reconstruct_params["ncores"])
             
-        panda_output_location = generate_params["pandafilepath"]
+        panda_output_location = reconstruct_params["pandafilepath"]
 
         # # Create output dir if one does not already exist
-        # panda_output_location = generate_params['pandafilepath']
+        # panda_output_location = reconstruct_params['pandafilepath']
 
         # pandapath = Path(panda_output_location)
         # if str(pandapath)[-4:] != ".txt":
         #     raise Exception("Error: Panda output file must have a .txt extension. Please edit your pandafilepath variable in your params file.")
         # os.makedirs(pandapath.parent, exist_ok=True)
         
-        # panda_obj = Panda(expression_file=generate_params['exp'], 
-        #     motif_file=generate_params['motif'], 
-        #     ppi_file=generate_params['ppi'], 
-        #     computing=generate_params['compute'],
-        #     modeProcess=generate_params['modeProcess'],
+        # panda_obj = Panda(expression_file=reconstruct_params['exp'], 
+        #     motif_file=reconstruct_params['motif'], 
+        #     ppi_file=reconstruct_params['ppi'], 
+        #     computing=reconstruct_params['compute'],
+        #     modeProcess=reconstruct_params['modeProcess'],
         #     save_tmp=False, 
         #     remove_missing=False, 
         #     keep_expression_matrix=True, 
@@ -238,28 +239,28 @@ def cli():
         # panda_obj.save_panda_results(panda_output_location, old_compatible=False)     
         
         print("Now reconstructing PANDA network...")        
-        pan = make_panda_network(generate_params["exp"],
-                                    generate_params["motif"],
-                                    generate_params["ppi"],
-                                    generate_params["compute"],
-                                    generate_params["modeProcess"],
+        pan = make_panda_network(reconstruct_params["exp"],
+                                    reconstruct_params["motif"],
+                                    reconstruct_params["ppi"],
+                                    reconstruct_params["compute"],
+                                    reconstruct_params["modeProcess"],
                                     pandafilepath=panda_output_location)
         
         # print("Now calculating PANDA degrees...")
         # calculate_panda_degree(inputfile=panda_output_location)
             
         # If user wants to run lioness, then we need to do the following
-        if generate_params['method'].lower() == 'lioness':
+        if reconstruct_params['method'].lower() == 'lioness':
             lion_files = make_lioness_networks(panda=pan,
-                                  compute=generate_params["compute"],
-                                  ncores=generate_params["ncores"],
-                                  start=generate_params["start"],
-                                  end=generate_params["end"],
-                                  lioness_fpath=generate_params["lionessfilepath"],
+                                  compute=reconstruct_params["compute"],
+                                  ncores=reconstruct_params["ncores"],
+                                  start=reconstruct_params["start"],
+                                  end=reconstruct_params["end"],
+                                  lioness_fpath=reconstruct_params["lionessfilepath"],
                                   panda_fpath=panda_output_location)
             
             
-            # lioness_full_path = generate_params['lionessfilepath']
+            # lioness_full_path = reconstruct_params['lionessfilepath']
             
             # if lioness_full_path[-4:] != ".npy":
             #     raise Exception("Error: Lioness output file must have a .npy extension. Please edit your lionessfilepath variable in your params file.")
@@ -268,36 +269,36 @@ def cli():
 
             # # If user wants to run lioness in batches or only run for certain samples (e.g. 10 samples at a time), then do the following.
             # # Note that this still uses all samples as the background, but will only reconstruct networks for the given sample numbers
-            # if generate_params['start'] is not None:
-            #     lionesspath_new_path = Path(f"{lionesspath_no_ext}_samples_{generate_params['start']}_to_{generate_params['end']}.npy")                
+            # if reconstruct_params['start'] is not None:
+            #     lionesspath_new_path = Path(f"{lionesspath_no_ext}_samples_{reconstruct_params['start']}_to_{reconstruct_params['end']}.npy")                
             # else:
             #     lionesspath_new_path = Path(lioness_full_path)
 
             # lioness_full_path = Path(lioness_full_path)
 
             # # Run Lioness on a subset of samples if specified in the params file, otherwise run on all samples
-            # if generate_params['start'] is not None:
+            # if reconstruct_params['start'] is not None:
             #     Lioness(panda_obj, 
-            #                computing=generate_params['compute'], 
+            #                computing=reconstruct_params['compute'], 
             #                precision="double",
-            #                ncores=generate_params['ncores'], 
+            #                ncores=reconstruct_params['ncores'], 
             #                save_dir=lioness_full_path.parent, 
             #                save_fmt="npy",
-            #                start=generate_params['start'],
-            #                end=generate_params['end'])
-            #             #    export_filename=f"./output/network/lioness_networks_samples_{generate_params['start']}_to_{generate_params['end']}.npy")
+            #                start=reconstruct_params['start'],
+            #                end=reconstruct_params['end'])
+            #             #    export_filename=f"./output/network/lioness_networks_samples_{reconstruct_params['start']}_to_{reconstruct_params['end']}.npy")
             # else:
             #     Lioness(panda_obj, 
-            #                computing=generate_params['compute'], 
+            #                computing=reconstruct_params['compute'], 
             #                precision="double",
-            #                ncores=generate_params['ncores'], 
+            #                ncores=reconstruct_params['ncores'], 
             #                save_dir=lioness_full_path.parent, 
             #                save_fmt="npy")
 
             # Rename the default name of the lioness output file, which is not an option of the current Lioness NetZooPy cli
             # os.rename(os.path.join(lioness_full_path.parent, "lioness.npy"), lionesspath_new_path)
 
-            #lion_loc = params['generate']['outdir'] + "lioness.npy"
+            #lion_loc = params['reconstruct']['outdir'] + "lioness.npy"
             # liondf = pd.DataFrame(np.load(lionesspath_new_path))            
                 
             # Note: The following was available in previous SiSaNA versions, but has been removed to reduce confusion from users. May be added back in at 
@@ -318,9 +319,9 @@ def cli():
             # print("Datafile after transformation")
             # print(lion_transformed.head(n=20))        
                         
-            # print("LIONESS network with transformed edge values saved to " + os.path.join(params['generate']['outdir'], "lioness_transformed_edges.npy"))
-            # if generate_params['start'] is not None:
-            #     pickle_path = f"./tmp/lioness_samples_{generate_params['start']}_to_{generate_params['end']}.pickle"
+            # print("LIONESS network with transformed edge values saved to " + os.path.join(params['reconstruct']['outdir'], "lioness_transformed_edges.npy"))
+            # if reconstruct_params['start'] is not None:
+            #     pickle_path = f"./tmp/lioness_samples_{reconstruct_params['start']}_to_{reconstruct_params['end']}.pickle"
             # else:
             #     pickle_path = './tmp/lioness.pickle'
                 
@@ -335,19 +336,19 @@ def cli():
             #                     "npy", 
             #                     './tmp/samples.txt',  
             #                     pickle_path,
-            #                     start=generate_params['start'],
-            #                     end=generate_params['end'])
+            #                     start=reconstruct_params['start'],
+            #                     end=reconstruct_params['end'])
                         
             # print("\n.pickle file created. Now calculating LIONESS degrees...")
             # calculate_lioness_degree(nwdf=liondf,
             #                          pickle=pickle_path)
             # print("LIONESS degrees have now been calculated.")
             
-            # if generate_params['start'] is not None:
-            #     lioness_indeg_filename = f"lioness_indegree_samples_{generate_params['start']}_to_{generate_params['end']}"
-            #     lioness_outdeg_filename = f"lioness_outdegree_samples_{generate_params['start']}_to_{generate_params['end']}"
-            #     Path(f"./tmp/lioness_samples_{generate_params['start']}_to_{generate_params['end']}_indegree.csv").rename(f"{Path(lioness_full_path).parent}/{lioness_indeg_filename}.csv")
-            #     Path(f"./tmp/lioness_samples_{generate_params['start']}_to_{generate_params['end']}_outdegree.csv").rename(f"{Path(lioness_full_path).parent}/{lioness_outdeg_filename}.csv")
+            # if reconstruct_params['start'] is not None:
+            #     lioness_indeg_filename = f"lioness_indegree_samples_{reconstruct_params['start']}_to_{reconstruct_params['end']}"
+            #     lioness_outdeg_filename = f"lioness_outdegree_samples_{reconstruct_params['start']}_to_{reconstruct_params['end']}"
+            #     Path(f"./tmp/lioness_samples_{reconstruct_params['start']}_to_{reconstruct_params['end']}_indegree.csv").rename(f"{Path(lioness_full_path).parent}/{lioness_indeg_filename}.csv")
+            #     Path(f"./tmp/lioness_samples_{reconstruct_params['start']}_to_{reconstruct_params['end']}_outdegree.csv").rename(f"{Path(lioness_full_path).parent}/{lioness_outdeg_filename}.csv")
 
             # else:
             #     lioness_indeg_filename = f"lioness_indegree"
@@ -357,8 +358,8 @@ def cli():
 
             # print(f"LIONESS network saved to {str(lionesspath_new_path)}")
             # print(f"LIONESS degrees saved to:")
-            # print(f"{Path(generate_params['lionessfilepath']).parent}/{lioness_indeg_filename}.csv")
-            # print(f"{Path(generate_params['lionessfilepath']).parent}/{lioness_outdeg_filename}.csv")
+            # print(f"{Path(reconstruct_params['lionessfilepath']).parent}/{lioness_indeg_filename}.csv")
+            # print(f"{Path(reconstruct_params['lionessfilepath']).parent}/{lioness_outdeg_filename}.csv")
                 
         print(f"\nPANDA network saved to {panda_output_location}")
         print(f"PANDA degrees saved to:") 
@@ -372,8 +373,8 @@ def cli():
                     str(lion_files["lioness_indeg_filepath"]),
                     str(lion_files["lioness_outdeg_filepath"])]
             
-        create_log_file(subcommand="generate", 
-                        params_dict=generate_params, 
+        create_log_file(subcommand="reconstruct", 
+                        params_dict=reconstruct_params, 
                         netzoopy_version=nzp_version,
                         sisana_version=s_version,
                         filenames=outfiles)
@@ -539,6 +540,7 @@ def cli():
 
         if args.plotchoice == "volcano": 
             # check_genelist_top(params, updated_params, "volcano")
+            check_num_group_colors(params, "volcano")
             
             volcano_params = updated_params["visualize"]["volcano"]
 

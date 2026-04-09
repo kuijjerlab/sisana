@@ -21,16 +21,16 @@ def get_default_params():
     def_preprocess["number"] = 5
     def_preprocess["outdir"] = "./output/preprocess"
     
-    def_params["generate"] = {}
-    def_generate = def_params["generate"]
-    def_generate["method"] = "lioness"
-    def_generate["modeProcess"] = "intersection"
-    def_generate["pandafilepath"] = "./output/network/panda_network.txt"
-    def_generate["compute"] = "cpu"
-    def_generate["ncores"] = 2
-    def_generate["lionessfilepath"] = "./output/network/lioness_networks.npy"
-    def_generate["start"] = None
-    def_generate["end"] = None
+    def_params["reconstruct"] = {}
+    def_reconstruct = def_params["reconstruct"]
+    def_reconstruct["method"] = "lioness"
+    def_reconstruct["modeProcess"] = "intersection"
+    def_reconstruct["pandafilepath"] = "./output/network/panda_network.txt"
+    def_reconstruct["compute"] = "cpu"
+    def_reconstruct["ncores"] = 2
+    def_reconstruct["lionessfilepath"] = "./output/network/lioness_networks.npy"
+    def_reconstruct["start"] = None
+    def_reconstruct["end"] = None
     
     def_params["compare"] = {}
     def_compare = def_params["compare"]

@@ -13,13 +13,13 @@ preprocess:
   outdir: ./output/preprocess # (Optional, Default: ./output/preprocess) The directory to save the output to.
 
 # Stage 2: Reconstruct networks and calculate degrees
-# example: sisana generate ./example_inputs/params.yml
-generate:
+# example: sisana reconstruct ./example_inputs/params.yml
+reconstruct:
   exp: ./output/preprocess/BRCA_TCGA_20_LumA_LumB_samps_5000_genes_exp_preprocessed.txt # (Required) Path to the expression file (RNA-Seq or microarray). Must be in matrix format with unique genes as rows and sample names as columns.
   motif: ./example_inputs/motif_prior_names_2024.tsv # (Required) Path to the motif prior file. This file is generated with SPONGE. For most users, this file can be used for their analysis as well.
   ppi: ./example_inputs/ppi_prior_2024.tsv # (Required) Path to the PPI prior file. This file is generated with SPONGE. For most users, this file can be used for their analysis as well.
   method: lioness # (Optional, Default: lioness) Which method to use, either "panda" to run just PANDA or "lioness", which runs PANDA first, then LIONESS
-  modeProcess: intersection # (Optional, Default: intersection) From netZooPy documentation: "legacy" refers to the processing mode in netZooPy<=0.5. "union" n of all TFs and genes across priors and fills the missing genes in the priors with zeros. "intersection"  input genes and TFs across priors and removes the missing TFs/genes.
+  modeProcess: intersection # (Optional, Default: intersection) From netZooPy documentation: "legacy" refers to the processing mode in netZooPy<=0.5. "union" takes the union of all TFs and genes across priors and fills the missing genes in the priors with zeros. "intersection" takes the intersection of input genes and TFs across priors and removes the missing TFs/genes.
   pandafilepath: ./output/network/panda_network.txt # (Optional, Default: ./output/network/panda_network.txt) Path to the PANDA output file to be created. Must have a .txt extension.
   compute: cpu # (Optional, Default: cpu) Whether to use "gpu" or "cpu" for computing networks
 
@@ -72,7 +72,7 @@ survival:
     - LumB
   colors:  # (Required) The colors for each group, in the same order the groups appear in the groups arg. Supports matplotlib named colors (https://matplotlib.org/stable/gallery/color/named_colors.html)
     - cornflowerblue
-    - orange    
+    - orange  
   outdir: ./output/survival/ # (Optional, Default: ./output/survival/) The directory to save the output to
 
 # Stage 4: Perform gene set enrichment analysis (GSEA). Must run "sisana compare means" first
@@ -153,6 +153,6 @@ visualize:
 # example: sisana extract params.yml
 extract:
   symbols: ./example_inputs/genes_to_extract.txt # (Required) The path to the file that contains the gene symbols of the TFs or genes (and their associated edges) you wish to extract
-  pickle: ./tmp/lioness.pickle # (Optional, Default: ./tmp/lioness.pickle) The path to the pickle file created in the "generate" step. By default, this will be made in the tmp directory.
+  pickle: ./tmp/lioness.pickle # (Optional, Default: ./tmp/lioness.pickle) The path to the pickle file created in the "reconstruct" step. By default, this will be made in the tmp directory.
   sampnames: ./tmp/samples.txt # (Optional, Default: ./tmp/samples.txt) The path to the tmp/samples.txt file, which is a text file that is generated in the preprocess step. By default, this will be made in the tmp directory.
   outdir: ./output/extract/ # (Optional, Default: ./output/extract/) The directory to save the output file to
