@@ -215,5 +215,5 @@ The final stage of SiSaNA, "summarize", takes all the created images and outputs
 sisana summarize
 ```
 <p align="center">
-  <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/example_html_output.png" width="750" />
+  <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/example_html_output_v2.png" width="750" />
 </p> 
