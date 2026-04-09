@@ -4,7 +4,8 @@ import numpy as np
 from pathlib import Path
 import csv
 from scipy import stats
-from .analyze import file_to_list, map_samples, calc_tt, calc_group_difference, NotASubsetError
+from .analyze import file_to_list, map_samples, calc_tt, calc_group_difference
+from sisana.exceptions import NotASubsetError
 import sys
 from numpy import log
 

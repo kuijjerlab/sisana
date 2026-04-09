@@ -7,7 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib 
 import warnings
-from .analyze import WrongAmountOfColorsError
+from sisana.exceptions import WrongAmountOfColorsError
 from typing import Optional
 import pickle
 

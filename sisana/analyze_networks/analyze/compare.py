@@ -8,7 +8,7 @@ from statistics import mean, median
 import math
 import numpy as np
 import sys
-from .exceptions import NotASubsetError
+from sisana.exceptions import NotASubsetError
 
 def file_to_list(fname):
     """

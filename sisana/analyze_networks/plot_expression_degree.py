@@ -5,7 +5,8 @@ import pickle
 from pathlib import Path
 import matplotlib.pyplot as plt
 import warnings
-from .analyze import file_to_list, NotASubsetError, filter_for_top_genes, filter_for_user_defined_genes, IncorrectHeaderError
+from .analyze import file_to_list, filter_for_top_genes, filter_for_user_defined_genes
+from sisana.exceptions import NotASubsetError, IncorrectHeaderError
 import os
 from typing import Optional
 
