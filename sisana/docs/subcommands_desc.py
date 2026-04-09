@@ -17,18 +17,18 @@ Output files:
   their value, then SiSaNA will remove genes not expressed in at least 5 samples.
 """
 
-generate_desc = """
+reconstruct_desc = """
 -----------------------------------
-Step 2 - Generate
+Step 2 - Reconstruct
 -----------------------------------
 
-Generate is the second step in the SiSaNA pipeline. In this step, the networks
+Reconstruct is the second step in the SiSaNA pipeline. In this step, the networks
 (both PANDA and per-sample LIONESS networks) are reconstructed. Then, the networks
 get saved as a .pickle format in the ./tmp/ directory for quicker loading into 
 downstream steps. SiSaNA will also calculate the indegrees and outdegrees for each
 gene and transcription factor respectively, per sample.
 
-Example: sisana generate params.yml
+Example: sisana reconstruct params.yml
 
 Input files (specified in the params.yml file):
   - exp: ./output/preprocess/BRCA_TCGA_20_LumA_LumB_samps_5000_genes_exp_preprocessed.txt # Path to the expression file
@@ -194,7 +194,7 @@ Examples: sisana extract genes params.yml
           sisana extract tfs params.yml
 
 Input files:
-  - pickle: The lioness.pickle file created in the "generate" step
+  - pickle: The lioness.pickle file created in the "reconstruct" step
   - sampnames: The path to the tmp/samples.txt file, which is a text file that is generated in the preprocess step
   - symbols: The path to the file that contains the names of TFs or genes you wish to extract
 
