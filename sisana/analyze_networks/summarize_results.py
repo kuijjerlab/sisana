@@ -142,7 +142,7 @@ def summarize(logdir: str):
     # Create the html contents for each analysis type. If that analysis log yaml file does not exist, then the analysis type will
     # not be in the all_analyses_info_dict, so it is left blank
     if 'preprocess' in all_analyses_info_dict: 
-        preprocess_add_info = {key: val for i in all_analyses_info_dict["preprocess"]["Additional information"] for key, val in i.items()}    
+        preprocess_add_info = all_analyses_info_dict["preprocess"]["Additional information"]
 
         preprocess_results = f"""
             <div>
@@ -153,7 +153,7 @@ def summarize(logdir: str):
     else: preprocess_results = ""
     
     if 'survival' in all_analyses_info_dict: 
-        survival_add_info = {key: val for i in all_analyses_info_dict["survival"]["Additional information"] for key, val in i.items()}    
+        survival_add_info = all_analyses_info_dict["survival"]["Additional information"]
         survival_results = f"""
         <div>
             <h2>Survival plot</h2>
@@ -201,16 +201,13 @@ def summarize(logdir: str):
     else: quantity_results = ""
         
     if 'volcano' in all_analyses_info_dict: 
-        volcano_add_info = {key: val for i in all_analyses_info_dict["volcano"]["Additional information"] for key, val in i.items()}    
-  
-        up_group_key = f"number of genes up in {volcano_add_info['up_group']}"
-        down_group_key = f"number of genes up in {volcano_add_info['down_group']}"
+        volcano_add_info = all_analyses_info_dict["volcano"]["Additional information"]  
 
         volcano_results = f"""
             <div>
                 <h2>Volcano plot</h2>
                 <p>To interpret this plot, pay attention to the TFs/genes that are colored. These are the genes that are below the <strong>{all_analyses_info_dict["volcano"]["input"]["adjpvalthreshold"]}</strong> FDR threshold and greater (absolute value) than the threshold of <strong>{all_analyses_info_dict["volcano"]["input"]["xaxisthreshold"]}</strong> set for the difference in {all_analyses_info_dict["volcano"]["input"]["difftype"]} degree. These may be genes that are important in distinguishing your two groups from one another.</p>
-                <p>There are <strong>{volcano_add_info[up_group_key]}</strong> genes higher in {volcano_add_info['up_group']} and <strong>{volcano_add_info[down_group_key]}</strong> genes higher in {volcano_add_info['down_group']}.</p>
+                <p>There are <strong>{volcano_add_info["up_gene_count"]}</strong> genes higher in {volcano_add_info['up_group']} and <strong>{volcano_add_info["down_gene_count"]}</strong> genes higher in {volcano_add_info['down_group']}.</p>
 
                 {_create_img_tag(all_analyses_info_dict["volcano"])}
             </div>

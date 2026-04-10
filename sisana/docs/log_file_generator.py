@@ -1,7 +1,7 @@
 import sys
 import os
 
-def create_log_file(subcommand: str, params_dict: dict, filenames: list, netzoopy_version: str, sisana_version: str, additional_info=["None"]) -> None: 
+def create_log_file(subcommand: str, params_dict: dict, filenames: list, netzoopy_version: str, sisana_version: str, additional_info=None) -> None: 
     """
     Description:
         This function creates log files for each command the user performs
@@ -11,7 +11,7 @@ def create_log_file(subcommand: str, params_dict: dict, filenames: list, netzoop
         - subcommand: str, The name of the subcommand used
         - params_dict: dict, The dictionary of the parameters the user supplied
         - filenames: list, The list of file paths that were created with the subcommand
-        - additional_info: List of additional strings to add to the end of the log file
+        - additional_info: Dictionary of additional key-value pairs to add to the end of the log file
         
     Returns:
     -----------
@@ -40,8 +40,9 @@ def create_log_file(subcommand: str, params_dict: dict, filenames: list, netzoop
         for i in fixed_names: 
             file.write("  - " + i + "\n")
 
-        file.write("\nAdditional information:\n")            
-        for i in additional_info:
-            file.write("  - " + i + "\n")
+        file.write("\nAdditional information:\n") 
+        if additional_info is not None:      
+            for k,v in additional_info.items():
+                file.write(f"  {k}: {v}\n")
 
             

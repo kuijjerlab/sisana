@@ -193,7 +193,7 @@ def cli():
         removed_str = f"genes removed: {genes_removed}"
         kept_str = f"genes kept: {genes_kept}"
         
-        extra_info_preprocess = [removed_str, kept_str]
+        extra_info_preprocess = {"genes removed": genes_removed, "genes kept": genes_kept}
         
         create_log_file(subcommand="preprocess", 
                         params_dict=preprocess_params, 
@@ -557,12 +557,12 @@ def cli():
                          numlabels=volcano_params["numlabels"],
                          top=volcano_params["top"])      
             
-            down_group_str = f"down_group: {down_group}"
-            up_group_str = f"up_group: {up_group}"
-            down_gene_str = f"number of genes up in {down_group}: {down_gene_count}"
-            up_gene_str = f"number of genes up in {up_group}: {up_gene_count}"
+            # down_group_str = f"down_group: {down_group}"
+            # up_group_str = f"up_group: {up_group}"
+            # down_gene_str = f"number of genes up in {down_group}: {down_gene_count}"
+            # up_gene_str = f"number of genes up in {up_group}: {up_gene_count}"
             
-            extra_info_num_genes = [down_group_str, down_gene_str, up_group_str, up_gene_str]
+            extra_info_num_genes = {"down_group": down_group, "down_gene_count": down_gene_count, "up_group": up_group, "up_gene_count": up_gene_count}
             
             create_log_file(subcommand="volcano_plot", 
                             params_dict=volcano_params, 
@@ -693,12 +693,7 @@ def cli():
                             outdir=compare_survival_params["outdir"])
         fnames, pval, sig = outfiles[0], outfiles[1], outfiles[2] 
         
-        pval_str = f"p-value: {pval}"
-        sig_str = f"significant?: {sig}"
-        
-        extra_info = []
-        extra_info.append(pval_str)
-        extra_info.append(sig_str)
+        extra_info = {"p-value": pval, "significant?": sig}
         
         create_log_file(subcommand="compare_survival", 
                         sisana_version=s_version,
