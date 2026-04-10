@@ -33,7 +33,6 @@ def fetch_files():
             '/files/heatmap_genes.txt',
             '/files/lioness_df_indegree_3_decimal_places_subset_200_LumALumB_samps.csv',
             '/files/params.yml',
-            '/files/params.yml',
             '/files/quantity_plot_genes.txt',
             '/files/volcano_plot_genes.txt']
             
