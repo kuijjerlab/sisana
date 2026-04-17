@@ -1,5 +1,5 @@
 ### 1.6.2  (upcoming release)
-- Changed the name of the "generate" command to "reconstruct"
+- Changed the name of the "generate" command to "reconstruct", with backwards compatibility for generate still
 - Fixed an issue where the error "ValueError: setting an array element with a sequence." would reportedly occur for some users if using newer versions of pandas/NumPy
 - Added a "data_color" parameter for the heatmap so the user can choose the color map to use for the heatmap (based on the given color map from https://matplotlib.org/stable/users/explain/colors/colormaps.html)
 - Added a "color" parameter for gsea that will now color the resulting dotplot based on the given color map from https://matplotlib.org/stable/users/explain/colors/colormaps.html
