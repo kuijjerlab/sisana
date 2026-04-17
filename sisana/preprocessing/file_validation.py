@@ -47,6 +47,21 @@ def validate_user_params(params_dict, command, subcommand=None):
         compute: cpu 
         ncores: 20
         lionessfilepath: ./output/network/lioness_networks.npy"""
+
+    params["generate"] = {} 
+    params["generate"]["required"] = ["exp", "motif", "ppi"]
+    params["generate"]["optional"] = ["method", "modeProcess", "pandafilepath", "compute", "ncores", "lionessfilepath", "start", "end"]
+    params["generate"]["example"] = """
+    generate:
+        exp: ./output/preprocess/BRCA_TCGA_20_LumA_LumB_samps_5000_genes_exp_preprocessed.txt
+        motif: ./example_inputs/motif_prior_names_2024.tsv
+        ppi: ./example_inputs/ppi_prior_2024.tsv 
+        method: lioness
+        modeProcess: intersection 
+        pandafilepath: ./output/network/panda_network.txt 
+        compute: cpu 
+        ncores: 20
+        lionessfilepath: ./output/network/lioness_networks.npy"""
     
     params["compare"] = {}
     params["compare"]["required"] = ["datafile", "mapfile", "groups", "filetype"]
@@ -225,8 +240,8 @@ def validate_user_params(params_dict, command, subcommand=None):
     
     if command == "preprocess":
         _validate_required_params(params_dict, "preprocess", params["preprocess"]["required"], params["preprocess"]["optional"])
-    if command == "reconstruct":
-        _validate_required_params(params_dict, "reconstruct", params["reconstruct"]["required"], params["reconstruct"]["optional"])
+    if command == "reconstruct" or command == "generate":
+        _validate_required_params(params_dict, command, params[command]["required"], params[command]["optional"])
     if command == "compare":
         _validate_required_params(params_dict, "compare", params["compare"]["required"], params["compare"]["optional"])
     if command == "survival":

@@ -47,7 +47,7 @@ def cli():
     # Add subcommands
     subparsers = parser.add_subparsers(title='Subcommands', dest='command')
     pre = subparsers.add_parser('preprocess', help='Filters expression data for parameters (e.g. genes) that are only present in at least m samples. Also filters each input file so they have the same genes and TFs across each', epilog=sisana.docs.preprocess_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
-    rec = subparsers.add_parser('reconstruct', help='reconstructs PANDA and LIONESS networks', epilog=sisana.docs.reconstruct_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
+    rec = subparsers.add_parser('reconstruct', aliases=['generate'], help='reconstructs PANDA and LIONESS networks', epilog=sisana.docs.reconstruct_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
     comb = subparsers.add_parser('combine', help='Combines indegree and outdegree files ran in batches', epilog=sisana.docs.combine_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
     ext = subparsers.add_parser('extract', help='Extract edges connected to specified TFs/genes', epilog=sisana.docs.extract_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
     comp = subparsers.add_parser('compare', help='Compare networks between sample groups', epilog=sisana.docs.compare_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -151,7 +151,7 @@ def cli():
 
     updated_params = {}
     
-    single_dict_keys = ["preprocess", "reconstruct", "combine", "compare", "survival", "gsea", "extract"]
+    single_dict_keys = ["preprocess", "reconstruct", "generate", "combine", "compare", "survival", "gsea", "extract"]
     nested_dict_keys = ["volcano", "quantity", "heatmap"]
 
     for key in single_dict_keys:
@@ -206,9 +206,9 @@ def cli():
     # 2) Run PANDA/LIONESS, using the parameters from the yaml file
     ########################################################
 
-    if args.command == 'reconstruct':
+    if args.command == 'reconstruct' or args.command == 'generate':
         
-        reconstruct_params = updated_params['reconstruct']
+        reconstruct_params = updated_params[args.command]
         if reconstruct_params["method"] == "lioness":
             check_ncore_value(reconstruct_params["ncores"])
             
@@ -244,7 +244,7 @@ def cli():
                     str(lion_files["lioness_indeg_filepath"]),
                     str(lion_files["lioness_outdeg_filepath"])]
             
-        create_log_file(subcommand="reconstruct", 
+        create_log_file(subcommand=args.command, 
                         params_dict=reconstruct_params, 
                         netzoopy_version=nzp_version,
                         sisana_version=s_version,

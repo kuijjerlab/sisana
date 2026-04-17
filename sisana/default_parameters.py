@@ -32,6 +32,17 @@ def get_default_params():
     def_reconstruct["start"] = None
     def_reconstruct["end"] = None
     
+    def_params["generate"] = {}
+    def_generate = def_params["generate"]
+    def_generate["method"] = "lioness"
+    def_generate["modeProcess"] = "intersection"
+    def_generate["pandafilepath"] = "./output/network/panda_network.txt"
+    def_generate["compute"] = "cpu"
+    def_generate["ncores"] = 2
+    def_generate["lionessfilepath"] = "./output/network/lioness_networks.npy"
+    def_generate["start"] = None
+    def_generate["end"] = None
+    
     def_params["compare"] = {}
     def_compare = def_params["compare"]
     def_compare["datatype"] = "degree"
