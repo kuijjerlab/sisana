@@ -4,7 +4,7 @@ from importlib.metadata import version
 from sisana.default_parameters import get_default_params 
 from sisana.exceptions import *
 from sisana.preprocessing import preprocess_data, validate_user_params, check_for_header, validate_metadata, check_genelist_top, check_ncore_value, check_no_hyphens_in_group_names, check_num_group_colors
-from sisana.postprocessing import convert_lion_to_pickle, extract_tfs_genes
+from sisana.postprocessing import convert_lion_to_pickle, extract_tfs_genes, combine_files
 # from sisana.postprocessing import convert_lion_to_pickle, extract_tfs_genes, quantile_normalize_edges
 from sisana.analyze_networks import calculate_panda_degree, calculate_lioness_degree, compare_bw_groups, survival_analysis, perform_gsea, plot_volcano, plot_expression_degree, plot_heatmap, plot_clustermap, summarize
 from sisana.reconstruct import make_panda_network, make_lioness_networks
@@ -213,30 +213,6 @@ def cli():
             check_ncore_value(reconstruct_params["ncores"])
             
         panda_output_location = reconstruct_params["pandafilepath"]
-
-        # # Create output dir if one does not already exist
-        # panda_output_location = reconstruct_params['pandafilepath']
-
-        # pandapath = Path(panda_output_location)
-        # if str(pandapath)[-4:] != ".txt":
-        #     raise Exception("Error: Panda output file must have a .txt extension. Please edit your pandafilepath variable in your params file.")
-        # os.makedirs(pandapath.parent, exist_ok=True)
-        
-        # panda_obj = Panda(expression_file=reconstruct_params['exp'], 
-        #     motif_file=reconstruct_params['motif'], 
-        #     ppi_file=reconstruct_params['ppi'], 
-        #     computing=reconstruct_params['compute'],
-        #     modeProcess=reconstruct_params['modeProcess'],
-        #     save_tmp=False, 
-        #     remove_missing=False, 
-        #     keep_expression_matrix=True, 
-        #     save_memory=False,
-        #     with_header=True)
-
-        # panda_res = panda_obj.export_panda_results
-        # # panda_res = panda_res.sort_values(by=["tf", "gene"])
-        # panda_res.to_csv(panda_output_location, sep=" ", index=False)
-        # panda_obj.save_panda_results(panda_output_location, old_compatible=False)     
         
         print("Now reconstructing PANDA network...")        
         pan = make_panda_network(reconstruct_params["exp"],
@@ -245,9 +221,6 @@ def cli():
                                     reconstruct_params["compute"],
                                     reconstruct_params["modeProcess"],
                                     pandafilepath=panda_output_location)
-        
-        # print("Now calculating PANDA degrees...")
-        # calculate_panda_degree(inputfile=panda_output_location)
             
         # If user wants to run lioness, then we need to do the following
         if reconstruct_params['method'].lower() == 'lioness':
@@ -259,108 +232,6 @@ def cli():
                                   lioness_fpath=reconstruct_params["lionessfilepath"],
                                   panda_fpath=panda_output_location)
             
-            
-            # lioness_full_path = reconstruct_params['lionessfilepath']
-            
-            # if lioness_full_path[-4:] != ".npy":
-            #     raise Exception("Error: Lioness output file must have a .npy extension. Please edit your lionessfilepath variable in your params file.")
-
-            # lionesspath_no_ext = lioness_full_path[:-4]
-
-            # # If user wants to run lioness in batches or only run for certain samples (e.g. 10 samples at a time), then do the following.
-            # # Note that this still uses all samples as the background, but will only reconstruct networks for the given sample numbers
-            # if reconstruct_params['start'] is not None:
-            #     lionesspath_new_path = Path(f"{lionesspath_no_ext}_samples_{reconstruct_params['start']}_to_{reconstruct_params['end']}.npy")                
-            # else:
-            #     lionesspath_new_path = Path(lioness_full_path)
-
-            # lioness_full_path = Path(lioness_full_path)
-
-            # # Run Lioness on a subset of samples if specified in the params file, otherwise run on all samples
-            # if reconstruct_params['start'] is not None:
-            #     Lioness(panda_obj, 
-            #                computing=reconstruct_params['compute'], 
-            #                precision="double",
-            #                ncores=reconstruct_params['ncores'], 
-            #                save_dir=lioness_full_path.parent, 
-            #                save_fmt="npy",
-            #                start=reconstruct_params['start'],
-            #                end=reconstruct_params['end'])
-            #             #    export_filename=f"./output/network/lioness_networks_samples_{reconstruct_params['start']}_to_{reconstruct_params['end']}.npy")
-            # else:
-            #     Lioness(panda_obj, 
-            #                computing=reconstruct_params['compute'], 
-            #                precision="double",
-            #                ncores=reconstruct_params['ncores'], 
-            #                save_dir=lioness_full_path.parent, 
-            #                save_fmt="npy")
-
-            # Rename the default name of the lioness output file, which is not an option of the current Lioness NetZooPy cli
-            # os.rename(os.path.join(lioness_full_path.parent, "lioness.npy"), lionesspath_new_path)
-
-            #lion_loc = params['reconstruct']['outdir'] + "lioness.npy"
-            # liondf = pd.DataFrame(np.load(lionesspath_new_path))            
-                
-            # Note: The following was available in previous SiSaNA versions, but has been removed to reduce confusion from users. May be added back in at 
-            # a later date, though, so it is just commented out for now.
-            # 
-            # To make the edges positive values for log2FC calculation later on, first need to transform edges by doing ln(e^w + 1), then calculate degrees. 
-            # Then you can do the log2FC of degrees in next step
-            # 
-            # This transformation is described in the paper "Regulatory Network of PD1 Signaling Is Associated 
-            # with Prognosis in Glioblastoma Multiforme"
-            # print("Now transforming edges...")
-
-            # print("Datafile before transformation")
-            # print(liondf.head(n=20))
-            
-            # lion_transformed = liondf.apply(np.vectorize(transform_edge_to_positive_val))
-            
-            # print("Datafile after transformation")
-            # print(lion_transformed.head(n=20))        
-                        
-            # print("LIONESS network with transformed edge values saved to " + os.path.join(params['reconstruct']['outdir'], "lioness_transformed_edges.npy"))
-            # if reconstruct_params['start'] is not None:
-            #     pickle_path = f"./tmp/lioness_samples_{reconstruct_params['start']}_to_{reconstruct_params['end']}.pickle"
-            # else:
-            #     pickle_path = './tmp/lioness.pickle'
-                
-            # print("\nLIONESS networks created. Now converting results to a .pickle file...")
-            
-            # Note that previously convert_lion_to_pickle() did not return anything, but now
-            # that SiSaNA no longer reads in the pickle file in the calculate_lioness_degree()
-            # function, the re-formatted network is returned by convert_lion_to_pickle() to give
-            # as input to calculate_lioness_degree()
-            # liondf = convert_lion_to_pickle(panda_output_location,
-            #                     liondf,
-            #                     "npy", 
-            #                     './tmp/samples.txt',  
-            #                     pickle_path,
-            #                     start=reconstruct_params['start'],
-            #                     end=reconstruct_params['end'])
-                        
-            # print("\n.pickle file created. Now calculating LIONESS degrees...")
-            # calculate_lioness_degree(nwdf=liondf,
-            #                          pickle=pickle_path)
-            # print("LIONESS degrees have now been calculated.")
-            
-            # if reconstruct_params['start'] is not None:
-            #     lioness_indeg_filename = f"lioness_indegree_samples_{reconstruct_params['start']}_to_{reconstruct_params['end']}"
-            #     lioness_outdeg_filename = f"lioness_outdegree_samples_{reconstruct_params['start']}_to_{reconstruct_params['end']}"
-            #     Path(f"./tmp/lioness_samples_{reconstruct_params['start']}_to_{reconstruct_params['end']}_indegree.csv").rename(f"{Path(lioness_full_path).parent}/{lioness_indeg_filename}.csv")
-            #     Path(f"./tmp/lioness_samples_{reconstruct_params['start']}_to_{reconstruct_params['end']}_outdegree.csv").rename(f"{Path(lioness_full_path).parent}/{lioness_outdeg_filename}.csv")
-
-            # else:
-            #     lioness_indeg_filename = f"lioness_indegree"
-            #     lioness_outdeg_filename = f"lioness_outdegree"
-            #     Path("./tmp/lioness_indegree.csv").rename(f"{Path(lioness_full_path).parent}/{lioness_indeg_filename}.csv")
-            #     Path("./tmp/lioness_outdegree.csv").rename(f"{Path(lioness_full_path).parent}/{lioness_outdeg_filename}.csv")
-
-            # print(f"LIONESS network saved to {str(lionesspath_new_path)}")
-            # print(f"LIONESS degrees saved to:")
-            # print(f"{Path(reconstruct_params['lionessfilepath']).parent}/{lioness_indeg_filename}.csv")
-            # print(f"{Path(reconstruct_params['lionessfilepath']).parent}/{lioness_outdeg_filename}.csv")
-                
         print(f"\nPANDA network saved to {panda_output_location}")
         print(f"PANDA degrees saved to:") 
         print(f"{str(panda_output_location)[:-4]}_outdegree.csv")
@@ -387,105 +258,13 @@ def cli():
     if args.command == 'combine':
         
         combine_params = updated_params['combine']
-        degree_dir_path = str(Path(combine_params['degree_dir']))
+        outfiles = combine_files(combine_params)
         
-        with open('./tmp/samples.txt', 'r') as file:
-            samplist = file.readlines()
-            samplist = [samp.strip() for samp in samplist] 
-
-        panda_file = pd.read_csv(combine_params['panda_file'], sep = " ")
-        panda_file["edge"] = panda_file["tf"] + "-" + panda_file["gene"] 
-        panda_file.index = panda_file["edge"]
-    
-        # with open("./tmp/samples.txt", "w") as f:
-        #     for samp in expdf.columns:
-        #         f.write(col + "\n")
-
-        def _get_batched_files(regex: str, ext: str):
-            """
-            Description:
-                Finds the batched indegree and outdegree files, saving them to their own lists
-
-            Parameters:
-            -----------     
-                - regex: str, regular expression to use for finding files
-                - ext: str, the extension of the files 
-            
-            Returns:
-            -----------
-                - Nothing
-            """
-            df_list = []
-            filenames_list = []
-            print("Files found to combine:")
-            if ext == "csv":
-                for file in glob.glob(f"{degree_dir_path}/{regex}"):
-                    print(f"  - {file}")
-                    df = pd.read_csv(file, index_col=0)
-                    df_list.append(df)
-                    filenames_list.append(file)
-            else:
-                for file in glob.glob(f"{degree_dir_path}/{regex}"):
-                    print(f"  - {file}")
-                    noext = file[:-4]
-                    startsamp, endsamp = int(noext.split("_")[-3]), int(noext.split("_")[-1])
-
-                    numpy_file = np.load(file)
-                    data = pd.DataFrame(numpy_file)
-
-                    data.columns = samplist[startsamp-1:endsamp]
-                    data.index = panda_file.index
-          
-                    df_list.append(data)
-                    filenames_list.append(file)
-                    
-            return(df_list, filenames_list)
-
-        # Combine the degree files automatically, since they are relatively small.
-        # Combining networks may run into memory issues, so it's optional
-        print(f"\nCombining indegree files, please wait...")
-        indeg_dataframes, indeg_filenames = _get_batched_files("lioness_outdegree_samples_*_to_*.csv", "csv")
-        combined_indeg = pd.concat(indeg_dataframes, axis=1)
-        combined_indeg.to_csv(f"{degree_dir_path}/lioness_indegree.csv", index=True)
-        print(f"File created: {degree_dir_path}/lioness_indegree.csv")
-        
-        print(f"\nCombining outdegree files, please wait...")
-        outdeg_dataframes, outdeg_filenames = _get_batched_files("lioness_indegree_samples_*_to_*.csv", "csv")       
-        combined_outdeg = pd.concat(outdeg_dataframes, axis=1)
-        combined_outdeg.to_csv(f"{degree_dir_path}/lioness_outdegree.csv", index=True)
-        print(f"File created: {degree_dir_path}/lioness_outdegree.csv")
-                    
-        if combine_params["delete_intermediate_files"] == True:
-            [os.remove(file) for file in indeg_filenames]
-            [os.remove(file) for file in outdeg_filenames]
-                    
-        if updated_params["combine"]["networks"] == True:   
-            print(f"\nCombining network files, please wait...")
-            numpy_dataframes, numpy_filenames = _get_batched_files("lioness_networks_samples_*_to_*.npy", "npy")                  
-            combined_nw = pd.concat(numpy_dataframes, axis=1)
-                        
-            pickle_path = './tmp/lioness.pickle'
-            np_path = f"{degree_dir_path}/lioness_network.npy"
-            
-            with open("./tmp/combined_samples.txt", "w") as f:
-                for col in combined_nw.columns:
-                    f.write(col + "\n")
-
-            convert_lion_to_pickle(combine_params['panda_file'],
-                        combined_nw,
-                        "npy", 
-                        './tmp/combined_samples.txt',  
-                        pickle_path)
-            
-            combined_nw = combined_nw.to_numpy()
-            np.save(np_path, combined_nw)
-            
-            # combined_nw.to_csv(np_path, index=True)
-            print(f"File created: {np_path}")
-                
-            if combine_params["delete_intermediate_files"] == True:
-                [os.remove(file) for file in numpy_filenames]
-                        
+        create_log_file(subcommand="combine", 
+                        params_dict=combine_params, 
+                        netzoopy_version=nzp_version,
+                        sisana_version=s_version,
+                        filenames=outfiles)       
 
     ########################################################
     # 3) Compare degree (or expression) between sample groups
@@ -556,11 +335,6 @@ def cli():
                          outdir=volcano_params["outdir"],
                          numlabels=volcano_params["numlabels"],
                          top=volcano_params["top"])      
-            
-            # down_group_str = f"down_group: {down_group}"
-            # up_group_str = f"up_group: {up_group}"
-            # down_gene_str = f"number of genes up in {down_group}: {down_gene_count}"
-            # up_gene_str = f"number of genes up in {up_group}: {up_gene_count}"
             
             extra_info_num_genes = {"down_group": down_group, "down_gene_count": down_gene_count, "up_group": up_group, "up_gene_count": up_gene_count}
             
@@ -703,7 +477,7 @@ def cli():
                         additional_info=extra_info)
 
     # ########################################################
-    # # (Optional) Quantile normalize edges, then calculate degree
+    # # (Optional) TODO: Quantile normalize edges, then calculate degree
     # ########################################################
     # if args.command == "quantnorm":     
     #     qnorm_params = updated_params['quantnorm']
