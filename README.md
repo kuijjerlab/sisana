@@ -83,7 +83,7 @@ cd sisana
 
 ## Pipeline overview 
 <p align="center">  
-  <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/sisana_pipeline_overview_v12.png" width="400" />
+  <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/sisana_pipeline_overview_v13.png" width="400" />
 </p>
 
 ## Example input files
@@ -127,11 +127,11 @@ Three files, one for each of the three filtered input files.
 
 
 ## Step 2: Reconstruction and analysis of networks
-This second SiSaNA stage, "generate", uses the PANDA and LIONESS algorithms of netZooPy to reconstruct gene regulatory networks. Documentation for netZooPy can be found at https://github.com/netZoo/netZooPy/tree/master. It then performs basic analyses of these networks by calculating in-degree of genes (also called gene targeting scores) and out-degree of transcription factors (TFs).
+This second SiSaNA stage, "reconstruct", uses the PANDA and LIONESS algorithms of netZooPy to reconstruct gene regulatory networks. Documentation for netZooPy can be found at https://github.com/netZoo/netZooPy/tree/master. It then performs basic analyses of these networks by calculating in-degree of genes (also called gene targeting scores) and out-degree of transcription factors (TFs).
 
 #### Example command
 ```
-sisana generate ./example_inputs/params.yml
+sisana reconstruct ./example_inputs/params.yml
 ```
 
 #### Outputs
@@ -215,5 +215,5 @@ The final stage of SiSaNA, "summarize", takes all the created images and outputs
 sisana summarize
 ```
 <p align="center">
-  <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/example_html_output.png" width="750" />
+  <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/example_html_output_v2.png" width="750" />
 </p> 
