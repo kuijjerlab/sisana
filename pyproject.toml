@@ -7,7 +7,7 @@ name = "sisana"
 authors = [
     {name = "Nolan Newman", email = "nolan.newman@ncmm.uio.no"},
 ]
-version = "1.6.2"
+version = "1.7.1"
 description = "A command line interface tool to reconstruct and analyze single sample networks."
 readme = "README.md"
 requires-python = ">=3.9.0"
@@ -45,7 +45,9 @@ filterwarnings = [
 where = ["."] 
 include = ["sisana", 
     "sisana.docs",    
+    "sisana.exceptions",    
     "sisana.generate",    
+    "sisana.reconstruct",    
     "sisana.postprocessing", 
     "sisana.preprocessing", 
     "sisana.postprocessing.post", 
