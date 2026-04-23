@@ -1,3 +1,7 @@
+### 1.7.2 (upcoming)
+- Added additional input validation for checking whether the user's file name matched the input file extension
+- Added the requirement for user to specify metadata file type, as previously the user was forced to use a csv file in some steps
+
 ### 1.7.1
 - Pinned the versions of required modules to requirements.txt
 
