@@ -1,4 +1,7 @@
-### 1.7.2 (upcoming)
+### 1.7.3 (upcoming)
+- Fixed issue where the header validation did not catch files without headers when using a metadata file in the format for a paired comparison 
+ 
+### 1.7.2
 - Added additional input validation for checking whether the user's file name matched the input file extension
 - Added the requirement for user to specify metadata file type, as previously the user was forced to use a csv file in some steps
 - Fixed problem with paired comparisons where code would not execute
