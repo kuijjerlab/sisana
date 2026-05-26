@@ -101,4 +101,11 @@ def get_default_params():
     def_combine["networks"] = True
     def_combine["delete_intermediate_files"] = True
 
+    def_params["quantnorm"] = {}
+    def_quantnorm = def_params["quantnorm"]
+    def_quantnorm["outdir"] = "./output/quantnorm/"
+    def_quantnorm["pandafilepath"] = "./output/network/panda_network.txt"
+    def_quantnorm["start"] = None
+    def_quantnorm["end"] = None
+
     return def_params
