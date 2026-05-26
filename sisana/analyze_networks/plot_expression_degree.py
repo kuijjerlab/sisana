@@ -9,8 +9,9 @@ from .analyze import file_to_list, filter_for_top_genes, filter_for_user_defined
 from sisana.exceptions import NotASubsetError, IncorrectHeaderError
 import os
 from typing import Optional
+from sisana.preprocessing import check_file_extension
 
-def plot_expression_degree(datafile: str, filetype: str, statsfile: str, metadata: str, 
+def plot_expression_degree(datafile: str, data_filetype: str, statsfile: str, metadata: str, metadata_filetype: str,
                   plottype: str, groups: list, colors: list, prefix: str, yaxisname: str, outdir: str,
                   top: bool=True, numgenes: int=10, genelist: Optional[str]=None):
     """
@@ -21,11 +22,12 @@ def plot_expression_degree(datafile: str, filetype: str, statsfile: str, metadat
     Parameters:
     -----------
         - datafile: str, Path to file containing the expression or indegrees of each gene per sample.
-        - filetype: str, Type of input file, must be either "csv", "txt", or "tsv", where csv implies comma separated values and txt/tsv 
+        - data_filetype: str, Type of input file, must be either "csv", "txt", or "tsv", where csv implies comma separated values and txt/tsv 
                         implies tab-separated
         - statsfile: str, Path to the file that contains the comparison output of the gene expression or degree
         - metadata: str, Path to the csv metadata file mapping samples to groups (groups must match names of the groups arg), 
                         must have a header of the format 'name,group'
+        - metadata_filetype: str, Type of metadata file, must be either "csv", "txt", or "tsv"
         - genelist: str, .txt file containing a list of genes to plot, must match the name of genes in the datafile. Recommended 
                         to not use more than 10 genes, otherwise use a heatmap.
         - plottype: str, The type of plot to create. Choices are "boxplot" or "violin"
@@ -47,14 +49,19 @@ def plot_expression_degree(datafile: str, filetype: str, statsfile: str, metadat
     if len(groups) > 5:
         warnings.warn("Warning: Supplying more than 10 groups at once may cause the created graphs to be unreadable. Consider reducing the number of groups.")
     
+    check_file_extension(datafile, data_filetype)
+    check_file_extension(metadata, metadata_filetype)
+    
     # Get data and metadata
-    if filetype == "csv":
+    if data_filetype == "csv":
         indata = pd.read_csv(datafile, engine = "python", index_col=[0])
-    elif filetype == "txt" or filetype == "tsv":
+    elif data_filetype == "txt" or data_filetype == "tsv":
         indata = pd.read_csv(datafile, sep='\t', engine = "python", index_col=[0])
         
-    # meta = pd.read_csv(metadata, engine = "pyarrow", index_col=[0])
-    meta = pd.read_csv(metadata, engine = "python", index_col=0)
+    if metadata_filetype == "csv":
+        meta = pd.read_csv(metadata, engine = "python", index_col=0)
+    elif metadata_filetype == "txt" or metadata_filetype == "tsv":
+        meta = pd.read_csv(metadata, sep='\t', engine = "python", index_col=0)
 
     meta.index.name = "name"
     meta.columns = ["group"]

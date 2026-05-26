@@ -10,6 +10,7 @@ import warnings
 from sisana.exceptions import WrongAmountOfColorsError
 from typing import Optional
 import pickle
+from sisana.preprocessing import check_file_extension
 
 def pnq(obj): # for debugging purposes 
     print(obj)
@@ -17,7 +18,7 @@ def pnq(obj): # for debugging purposes
     
 sys.setrecursionlimit(100000) # Required or else an error can occur where a maximum recursion limit is reached in scipy's hierarchy.py script (which is used by seaborn's matrix.py script)
       
-def plot_clustermap(datafile: str, filetype: str, metadata: str, genelist: str, column_cluster: bool, row_cluster: bool, 
+def plot_clustermap(datafile: str, data_filetype: str, metadata: str, metadata_filetype: str, genelist: str, column_cluster: bool, row_cluster: bool, 
                     data_color: str, prefix: str, outdir: str, plot_gene_names: bool, plot_sample_names: bool, top: bool=True, 
                     category_label_columns: list=[], category_column_colors: list=[], statsfile: str="", subset_for: Optional[str]=None):
     '''
@@ -27,7 +28,7 @@ def plot_clustermap(datafile: str, filetype: str, metadata: str, genelist: str, 
     Parameters:
     -----------
         - datafile: str, Path to file containing the expression or indegrees of each gene per sample
-        - filetype: str, Type of inputfile, either "csv" for comma separated files or "txt" or "tsv" for tab-delimited
+        - data_filetype: str, Type of inputfile, either "csv" for comma separated files or "txt" or "tsv" for tab-delimited
         - statsfile: str, Path to the file that contains the comparison output of the gene expression or degree
         - metadata: str, Path to the csv metadata file mapping samples to groups (groups must match names of the groups arg)
             Example:
@@ -37,7 +38,7 @@ def plot_clustermap(datafile: str, filetype: str, metadata: str, genelist: str, 
                 TCGA_AR_A5QN_01A_12R_A28M_07  LumB        yes      3
                 TCGA_LL_A50Y_01A_11R_A266_07  LumB        no      1
                 TCGA_B6_A0I5_01A_11R_A034_07  LumB        no      2
-            
+        - metadata_filetype: str, Type of the metadata file, either "csv" for comma separated files or "txt" or "tsv" for tab-delimited 
         - genelist: str, .txt file containing a list of genes to plot. Required if "top" is not set
         - rowcluster: bool, Flag for if you wish to cluster the rows
         - prefix: str, Prefix to use for the output file; note that the output file will automatically be generated with the suffix '_clustermap.png'
@@ -55,17 +56,24 @@ def plot_clustermap(datafile: str, filetype: str, metadata: str, genelist: str, 
     if len(category_label_columns) > 1:
         raise Exception("Error: At this time, SiSaNA only supports using one 'metadata' type for coloring of sample groups. Please change your params.yml file to only include one value for the 'category_label_columns' parameter.")
 
+    check_file_extension(datafile, data_filetype)
+    check_file_extension(metadata, metadata_filetype)
+
     print("Reading in files...")  
-    if filetype == "csv":
+    if data_filetype == "csv":
         datadf = pd.read_csv(datafile, index_col = 0)
-    elif filetype == "txt" or filetype == "tsv":
+    elif data_filetype == "txt" or data_filetype == "tsv":
         datadf = pd.read_csv(datafile, index_col = 0, sep = "\t")
-        
+
+    if metadata_filetype == "csv":
+        samp_meta_file = pd.read_csv(metadata)
+    elif metadata_filetype == "txt" or metadata_filetype == "tsv":
+        samp_meta_file = pd.read_csv(metadata, sep = "\t")
+
     os.makedirs(outdir, exist_ok=True)
     
     # Find the overlap between the samples in the data df and the metadata df
     samp_data_list = datadf.columns
-    samp_meta_file = pd.read_csv(metadata)
     samp_meta_list = samp_meta_file.iloc[:,0].tolist()  
 
     sample_overlap = find_sample_overlap(samp_data_list, samp_meta_list)
@@ -78,10 +86,10 @@ def plot_clustermap(datafile: str, filetype: str, metadata: str, genelist: str, 
         genes_to_plot = file_to_list(genelist)
         filtered = dat.filter(items = genes_to_plot, axis=0)
 
-    else:
-        filtered = filter_for_top_genes(datafile=dat, 
-                       statsfile=compare_df,                     
-                       number=50)
+    # else:
+    #     filtered = filter_for_top_genes(datafile=dat, 
+    #                    statsfile=compare_df,                     
+    #                    number=50)
     
     # If user only wants to plot a subset of the samples, remove the unwanted samples from the data and metadata
     if subset_for is not None:
