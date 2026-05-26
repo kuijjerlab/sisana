@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 import sys
-from sisana.exceptions import NumColorsNumGroupsMismatchError, TooManyCoresError
+from sisana.exceptions import NumColorsNumGroupsMismatchError, TooManyCoresError, ExtensionMismatchError
 
 def validate_user_params(params_dict, command, subcommand=None):
     """
@@ -64,18 +64,19 @@ def validate_user_params(params_dict, command, subcommand=None):
         lionessfilepath: ./output/network/lioness_networks.npy"""
     
     params["compare"] = {}
-    params["compare"]["required"] = ["datafile", "mapfile", "groups", "filetype"]
+    params["compare"]["required"] = ["datafile", "mapfile", "groups", "data_filetype", "map_filetype"]
     params["compare"]["optional"] = ["datatype", "testtype", "rankby", "outdir"]
     params["compare"]["example"] = """
     compare: 
         datafile: ./example_inputs/lioness_df_indegree_3_decimal_places_subset_200_LumALumB_samps.csv 
+        data_filetype: csv 
         mapfile: ./example_inputs/BRCA_TCGA_200_LumA_LumB_samps_mapping_w_header.csv
+        map_filetype: csv
         datatype: degree 
         groups:  
             - LumA
             - LumB
         testtype: mw 
-        filetype: csv 
         rankby: mediandiff 
         outdir: ./output/compare_means/"""
     
@@ -121,15 +122,16 @@ def validate_user_params(params_dict, command, subcommand=None):
             top: False"""
     
     params["quantity"] = {}
-    params["quantity"]["required"] = ["datafile", "statsfile", "filetype", "metadata", "groups", "colors", "prefix", "yaxisname",  "genelist", "top"]    
+    params["quantity"]["required"] = ["datafile", "statsfile", "data_filetype", "metadata", "groups", "colors", "prefix", "yaxisname",  "genelist", "top", "metadata_filetype"]    
     params["quantity"]["optional"] = ["plottype", "outdir", "prefix", "numgenes"]    
     params["quantity"]["example"] = """
     visualize:
         quantity: 
             datafile: ./example_inputs/lioness_df_indegree_3_decimal_places_subset_200_LumALumB_samps.csv 
             statsfile: ./output/compare_means/comparison_mw_between_LumA_LumB_degree.txt 
-            filetype: csv 
-            metadata: ./example_inputs/BRCA_TCGA_200_LumA_LumB_samps_mapping_w_header.csv 
+            data_filetype: csv 
+            metadata: ./example_inputs/BRCA_TCGA_200_LumA_LumB_samps_mapping_w_header.csv
+            metadata_filetype: csv 
             plottype: boxplot 
             groups: 
                 - LumA
@@ -144,15 +146,16 @@ def validate_user_params(params_dict, command, subcommand=None):
             top: False"""
     
     params["heatmap"] = {}
-    params["heatmap"]["required"] = ["datafile", "filetype", "statsfile", "metadata", "genelist", "category_label_columns", "category_column_colors"]
+    params["heatmap"]["required"] = ["datafile", "data_filetype", "statsfile", "metadata", "genelist", "category_label_columns", "category_column_colors", "metadata_filetype"]
     params["heatmap"]["optional"] = ["column_cluster", "row_cluster", "plot_gene_names", "plot_sample_names", "outdir", "prefix", "subset_for", "data_color"]
     params["heatmap"]["example"] = """
     visualize:
         heatmap: 
             datafile: ./example_inputs/lioness_df_indegree_3_decimal_places_subset_200_LumALumB_samps.csv 
-            filetype: csv 
+            data_filetype: csv 
             statsfile: ./output/compare_means/comparison_mw_between_LumA_LumB_degree.txt 
             metadata: ./example_inputs/BRCA_TCGA_200_LumA_LumB_samps_mapping_w_header.csv 
+            metadata_filetype: csv
             genelist: ./example_inputs/heatmap_genes.txt 
             column_cluster: False
             row_cluster: True 
@@ -174,7 +177,15 @@ def validate_user_params(params_dict, command, subcommand=None):
         pickle: ./tmp/lioness.pickle
         sampnames: ./tmp/samples.txt 
         symbols: ./example_inputs/genes_to_extract.txt
-        outdir: ./output/extract/"""
+        outdir: ./output/extract/"""    
+    
+    params["quantnorm"] = {}
+    params["quantnorm"]["required"] = ["network_file"]    
+    params["quantnorm"]["optional"] = ["outdir", "pandafilepath", "start", "end"]    
+    params["quantnorm"]["example"] = """
+    quantnorm:
+        network_file: ./tmp/lioness.npy
+        outdir: ./output/quantnorm/"""
 
     # Ensure the commands are in the params file. If using a visualize command, then you also need 
     # to specify a subcommand in the params file
@@ -334,13 +345,10 @@ def validate_metadata(df):
     -----------
         - Nothing
     """
-    mapfile = pd.read_csv(df, index_col=0)
-    
-    if len(mapfile.columns) > 2:
-        raise Exception("Error: Please only supply two columns for your mapping file. Ensure the first column is the name and the second column is the group. Also ensure that the file has a header.")
 
-    unique_groups = mapfile.iloc[:, 0].unique()
-    if mapfile.columns[0] in unique_groups:
+    unique_groups = df.iloc[:, 0].unique()
+    
+    if df.columns[0] in unique_groups:
         raise Exception("Error: It appears you do not have a header in your mapping file. Please supply a header with contents that are unique from the values in the columns.")
     
     print(f"Header of metadata file appears valid. Continuing...")
@@ -417,21 +425,19 @@ def check_genelist_top(user_params, updated_params_w_def, com):
     # print("Visualization parameters appear fine. Continuing...")
     # # sys.exit(0)
     
-def check_no_hyphens_in_group_names(mapfile: str):
+def check_no_hyphens_in_group_names(meta: str):
     """
     Description:
         Checks to make sure that none of the group names contain hyphens, as this can cause issues with downstream analysis.
      
     Parameters:
     -----------  
-        - mapfile: str, the path to the metadata file that contains the group names in the second column. The first column should be sample names and the file should have a header.
+        - meta: str, the metadata df
         
     Returns:
     -----------
         - Nothing
     """
-    
-    meta = pd.read_csv(mapfile, sep=",", index_col=0)
     
     for groupname in list(meta.iloc[:, 0]):
         if "-" in groupname:
@@ -454,3 +460,24 @@ def check_num_group_colors(user_params: dict, com: str):
     """
     if len(user_params["visualize"][com]["groups"]) != len(user_params["visualize"][com]["colors"]):
         raise NumColorsNumGroupsMismatchError("groups", "colors", len(user_params["visualize"][com]["groups"]), len(user_params["visualize"][com]["colors"]))
+    
+def check_file_extension(filename, ext):
+    """
+    Description:
+        Checks whether the user-supplied file has the correct file extension based on the delimiter they specified in the params file. For example, if they specified a comma delimiter, 
+        then the file should have a .csv extension. If they specified a tab delimiter, then the file should have a .txt or .tsv extension.
+
+    Parameters:
+    -----------     
+        - filename: str, the path to the file
+        - ext: str, the user-supplied extension 
+    
+    Returns:
+    -----------
+        - Nothing
+    """
+    
+    if ext == "csv" and (filename[-3:] == "txt" or filename[-3:] == "tsv"):
+        raise ExtensionMismatchError(filename, ext)
+    if (ext == "txt" or ext == "tsv") and filename[-3:] == "csv":
+        raise ExtensionMismatchError(filename, ext)
