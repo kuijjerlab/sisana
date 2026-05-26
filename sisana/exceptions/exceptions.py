@@ -95,3 +95,16 @@ class TooManyCoresError(Exception):
         self.message = f"\n\nError: You have requested more cores ({self.ncores}) than you have samples ({self.nsamps}). Please ensure 'ncores' <= number of samples.\n"
         super().__init__(self.message)
         
+class ExtensionMismatchError(Exception):
+    """
+    Raise when the user supplies a file with an extension that does not match the delimiter they specified in the params.yml file.
+
+    Attributes:
+        category: str, Name of the category 
+    """
+    def __init__(self, filename: str, ext: str):
+        self.filename = filename
+        self.ext = ext
+        self.message = f"\n\nError: The supplied file ({filename}) has a different extension than the one indicated in the params file ({ext}). Please ensure the data format matches the extension you indicated in the params file and that you have set the parameters for it correctly.\n"
+        super().__init__(self.message)
+        
