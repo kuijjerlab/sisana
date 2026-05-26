@@ -4,15 +4,17 @@ import numpy as np
 from pathlib import Path
 import csv
 from scipy import stats
-from .analyze import file_to_list, map_samples, calc_tt, calc_group_difference
+from scipy.stats import ttest_rel, wilcoxon
+from .analyze import file_to_list, map_samples, calc_tt, calculate_additional_comparison_stats
 from sisana.exceptions import NotASubsetError
 import sys
 from numpy import log
+from sisana.preprocessing import check_no_hyphens_in_group_names, check_for_header, validate_metadata, check_file_extension
 
 __author__ = 'Nolan Newman'
 __contact__ = 'nolankn@uio.no'
     
-def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, testtype: str, filetype: str, rankby_col: str, outdir: str):
+def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, testtype: str, data_filetype: str, map_filetype: str, rankby_col: str, outdir: str):
     '''
     Description:
         This code compares the degree or expression of two sample groups
@@ -24,7 +26,8 @@ def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, 
         - datatype: str, The type of data being used ("expression" or "degree")
         - groups: str, Names of the two groups (from the second column of mapfile) to be compared. The second group listed will be used as the numerator in the fold change calulation.
         - testtype: str, Type of comparison to perform, either "tt" for Student's t-test, "mw" for Mann-Whitney U, "paired_tt", or "wilcoxon"
-        - filetype: str, The type of data file ("csv" or "txt" or "tsv") being used
+        - data_filetype: str, The type of data file ("csv" or "txt" or "tsv") being used
+        - map_filetype: str, The type of mapping file ("csv" or "txt" or "tsv") being used
         - rankby_col: str, Choices: ["mediandiff", "mwu", "neglogp", "meandiff"]. The statistic to rank the .rnk output file by for GSEA. 
         - outdir: str, The directory to save the output to
         
@@ -36,31 +39,35 @@ def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, 
     # Create output directory if one does not already exist    
     os.makedirs(outdir, exist_ok=True)
     
-    if filetype == "csv" and (datafile[-3:] == "txt" or datafile[-3:] == "tsv"):
-        raise Exception("Error: The supplied data file has the extension 'csv', not the expected 'txt' or 'tsv' based on the supplied value to --filetype. If this is desired, please change the extension of the data file to match the extension of --filetype")
-    if filetype == "txt" and datafile[-3:] == "csv":
-        raise Exception(f"Error: The supplied data file has the extension 'txt', not the expected 'csv' based on the supplied value to --filetype. If this is desired, please change the extension of the data file to match the extension of --filetype")
+    check_file_extension(datafile, data_filetype)
+    check_file_extension(mapfile, map_filetype)
     
-    if filetype == "csv":
+    if data_filetype == "csv":
         datadf = pd.read_csv(datafile, index_col = 0)
     else:
         datadf = pd.read_csv(datafile, index_col = 0, sep = "\t")
         
+    if map_filetype == "csv":
+        mapfile = pd.read_csv(mapfile, index_col = 0)
+    else:
+        mapfile = pd.read_csv(mapfile, index_col = 0, sep = "\t")
+    
+    check_for_header(datafile, data_filetype)
+    validate_metadata(mapfile)
+        
     if testtype == "tt" or testtype == "mw":
-          
+        check_no_hyphens_in_group_names(mapfile)
+        
         # Assign samples from mapping file to groups
-        mapfile = pd.read_csv(mapfile, index_col=0)
         sampdict = map_samples(mapfile, groups[0], groups[1])
         total_samps = len(sampdict[groups[0]]) + len(sampdict[groups[1]])
     
     elif testtype == "paired_tt" or testtype == "wilcoxon":
-        mapfile = pd.read_csv(mapfile)
-
-        groups = {}
-        groups["group1"] = mapfile.iloc[:,0].tolist()
-        groups["group2"] = mapfile.iloc[:,1].tolist()
-        total_samps = len(groups["group1"]) + len(groups["group2"])
-               
+        sampdict = {}
+        sampdict[groups[0]] = list(mapfile.index)
+        sampdict[groups[1]] = mapfile.iloc[:,0].tolist()
+        total_samps = len(sampdict[groups[0]]) + len(sampdict[groups[1]])
+                   
     # remove unnecessary samples to save on memory
     if len(datadf.columns) > total_samps:
         allsamps = []
@@ -82,28 +89,20 @@ def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, 
         raise NotASubsetError(user_list=samps_list_group1, data_list=compdf.columns, dtype="samples")
     if not set(samps_list_group2).issubset(list(compdf.columns)):
         raise NotASubsetError(user_list=samps_list_group2, data_list=compdf.columns, dtype="samples")
-        
+
     print("Performing comparisons, please wait...")
+    
     # Calculate p-value/FDR
-    if testtype != "mw":
-        if testtype == "tt": 
-            pval = compdf.apply(lambda row : calc_tt(row[sampdict[groups[1]]], row[sampdict[groups[0]]], testtype), axis = 1)
-        elif testtype == "paired_tt" or testtype == "wilcoxon":
-            pval = compdf.apply(lambda row : calc_tt(row[groups["group1"]], row[groups["group2"]], testtype), axis = 1) 
-            
-        # Format the output data frame
-        pval_column = testtype + "_pvalue"
-        pvaldf = pd.DataFrame({'Target':pval.index, pval_column:pval.values})
-        newpvaldf = pd.DataFrame(pvaldf[pval_column].to_list(), columns=['test_statistic', pval_column])
-        newpvaldf['Target'] = pval.index
-        newpvaldf = newpvaldf.set_index('Target')
-        test_stat_column = "test_statistic"
-         
+    
+    pval_column = testtype + "_pvalue"
+    test_stat_column = "test_statistic"
+
+    if testtype != "mw": 
+        newpvaldf = calc_tt(compdf, sampdict[groups[1]], sampdict[groups[0]], testtype, pval_column, test_stat_column)
+        
     else:
-        # Need to calculate Mann-Whitney separately since the test statistic is calculated differently
-        # compdf.apply(lambda row : calc_tt(row[sampdict[groups[1]]], row[sampdict[groups[0]]], testtype), axis = 1)
-        # mwu_uval, mwu_pval, mwu_cles = compdf.apply(lambda row : calc_tt(row[sampdict[groups[1]]], row[sampdict[groups[0]]], testtype), axis = 1)
-        mwu_calculations = compdf.apply(lambda row : calc_tt(row[sampdict[groups[1]]], row[sampdict[groups[0]]], testtype), axis = 1)
+        # mwu_calculations = calc_tt(compdf, sampdict[groups[1]], sampdict[groups[0]], testtype, pval_column, test_stat_column)
+        mwu_calculations = compdf.apply(lambda row : calc_tt(compdf, row[sampdict[groups[1]]], row[sampdict[groups[0]]], testtype, pval_column, test_stat_column), axis = 1)
     
         # Format the output data frame
         pval_column = testtype + "_pvalue"
@@ -126,66 +125,11 @@ def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, 
     # if datatype == "expression":
     #     fc = compdf.apply(lambda row : calc_log2_fc(row[sampdict[groups[1]]], row[sampdict[groups[0]]]), axis = 1)
 
-    mean_diff = compdf.apply(lambda row : calc_group_difference(row[sampdict[groups[0]]], row[sampdict[groups[1]]], difftype="mean"), axis = 1)
-    median_diff = compdf.apply(lambda row : calc_group_difference(row[sampdict[groups[0]]], row[sampdict[groups[1]]], difftype="median"), axis = 1)
-
-    print("Comparisons finished...") 
-    
-    # Calcuate means per group
-    mean_g2_colname = f"mean_{groups[1]}"    
-    mean_g1_colname = f"mean_{groups[0]}"      
-    newpvaldf[mean_g2_colname] = compdf[sampdict[groups[1]]].mean(axis=1)
-    newpvaldf[mean_g1_colname] = compdf[sampdict[groups[0]]].mean(axis=1)
-    meandiff_colname = f"difference_of_means_({groups[1]}-{groups[0]})"      
-    newpvaldf[meandiff_colname] = mean_diff
-    newpvaldf["abs(difference_of_means)"] = abs(mean_diff)
-
-    # Calcuate medians per group    
-    median_g2_colname = f"median_{groups[1]}"    
-    median_g1_colname = f"median_{groups[0]}"      
-    newpvaldf[median_g2_colname] = compdf[sampdict[groups[1]]].median(axis=1)
-    newpvaldf[median_g1_colname] = compdf[sampdict[groups[0]]].median(axis=1)    
-    mediandiff_colname = f"difference_of_medians_({groups[1]}-{groups[0]})"      
-    newpvaldf[mediandiff_colname] = median_diff
-    newpvaldf["abs(difference_of_medians)"] = abs(median_diff)
-
-    # Perform multiple test correction
-    FDR_colname = "FDR"
-    newpvaldf[FDR_colname] = stats.false_discovery_control(newpvaldf[pval_column])
-    newpvaldf = newpvaldf.sort_values(pval_column, ascending = True)
-    
-    if testtype == "mw": 
-        if rankby_col == "mwu":
-            sortcol = "mw_uvalue"
-        elif rankby_col == "mediandiff":
-            sortcol = f"difference_of_medians_({groups[1]}-{groups[0]})"
-        elif rankby_col == "meandiff":
-            sortcol = f"difference_of_means_({groups[1]}-{groups[0]})"
-        elif rankby_col == "neglogp":
-            sortcol = "mw_signed_-log(pvalue)"
-    else:
-        sortcol = test_stat_column
-    
-    # Create new df without pval, ranked on test statistic (as chosen by user)
-    ranked = newpvaldf.sort_values(sortcol, ascending = False)
-    ranked.drop([pval_column, FDR_colname], inplace=True, axis=1)
-    ranked = ranked[sortcol]
-    
-    
-    # Rearrange column order so that FDR calculations comes after p-value
+    # Calculate additional statistics (difference of means, difference of medians, etc.) and add to the output data frame
     if testtype != "mw":
-        colorder = [test_stat_column, pval_column, FDR_colname,
-                    mean_g2_colname, mean_g1_colname,
-                    meandiff_colname, median_g2_colname, median_g1_colname,
-                    mediandiff_colname]
-        newpvaldf = newpvaldf.loc[:, colorder] 
+        newpvaldf, ranked = calculate_additional_comparison_stats(newpvaldf, compdf, groups[0], groups[1], samps_list_group1, samps_list_group2, testtype, rankby_col, pval_column, test_stat_column)
     else:
-        colorder = [test_stat_column, pval_column, neglogp_column, FDR_colname,
-                    cles_column, mean_g2_colname, mean_g1_colname,
-                    meandiff_colname, median_g2_colname, median_g1_colname,
-                    mediandiff_colname]
-        newpvaldf = newpvaldf.loc[:, colorder]
-    
+        newpvaldf, ranked = calculate_additional_comparison_stats(newpvaldf, compdf, groups[0], groups[1], samps_list_group1, samps_list_group2, testtype, rankby_col, pval_column, test_stat_column, neglogp_column=neglogp_column, cles_column=cles_column)
     # Write to disk
     if testtype == "tt" or testtype == "mw":
         save_file_path = os.path.join(outdir, f"comparison_{testtype}_between_{groups[0]}_{groups[1]}_{datatype}.txt")

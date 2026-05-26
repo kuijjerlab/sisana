@@ -1,5 +1,6 @@
 import scipy 
 from scipy import stats
+from scipy.stats import ttest_rel, wilcoxon
 import scipy.stats
 import csv
 import re
@@ -50,86 +51,64 @@ def map_samples(mapfile: pd.DataFrame, type1: str, type2: str):
     samp_type_dict = {group: mapf.index[mapf.iloc[:,0] == group].tolist() for group in mapf.iloc[:,0].unique()}
     return (samp_type_dict)
 
-def calc_tt(group1, group2, ttype):
+def calc_tt(compdf, group1, group2, ttype, pcol, tcol):
     '''
     Performs either a students t-test or mann-whitney test between two groups
     
         Arguments:
+            - compdf: data frame containing values for comparisons
             - group1: list of samples in first group
             - group2: list of samples in second group
             - ttype: str, the type of test to perform, either tt or mw
+            - pcol: str, the name of the column containing the p-value in the output df
+            - tcol: str, the name of the column containing the test statistic in the output df
+                 
     '''
-    
-    # For testing purposes
-    from scipy.stats import mannwhitneyu 
-    # group1 = [1,2,5,7,9, 8,6,5,3]
-    # group2 = [2,3,6,8,9, 9,9,8,7]
-    # print("entered compare.py")
 
-    # print(group1)
-    # print(group2)
-    # sys.exit(0)
-    
-    if ttype != 'mw':
-        if ttype == 'tt':
-            p = stats.ttest_ind(group1, group2)                              
-        elif ttype == 'paired_tt':
-            p = stats.ttest_rel(group1, group2)
-        elif ttype == 'wilcoxon':
-            p = stats.wilcoxon(group1, group2)
+    if ttype == 'tt':
+        pval = compdf.apply(lambda row : stats.ttest_ind(row[group1], row[group2]), axis = 1)
+        
+        pvaldf = pd.DataFrame({'Target':pval.index, pcol:pval.values})
+        newpvaldf = pd.DataFrame(pvaldf[pcol].to_list(), columns=['test_statistic', pcol])
+        newpvaldf['Target'] = pval.index
+        newpvaldf = newpvaldf.set_index('Target')
+        return(newpvaldf)
 
-        statistic = p[0]
-        pval = p[1]
-        
-        return(statistic, pval)
-        
-    elif ttype == 'mw':
-        # p = stats.mannwhitneyu(group1, group2)
-        
-        # # Note that since mann whitney technically has two test statistics (one for U1 and the other for U2), we have to compute both and take the minimum.
-        # # Wilcoxon also has two test statistics, but by default it returns the smaller of the two, so no need for SiSaNA to calculate
-        # u1 = p[0]
-        # #u2 = group1.shape[0] * group2.shape[0] - p[0]
-        # u2 = len(group1) * len(group2) - p[0]
-        
-        # statistic = min(u1,u2)
-        # if mean(group1) < mean(group2):
-        #     statistic = statistic * -1
+    elif ttype == 'paired_tt':
+        tval = []
+        pval = []
 
-        # pval = p[1]
-        
-        # print("\nValue of p, which is stats.mannwhitneyu(group1, group2):")
-        # print(p)
-        
-        # print("Value of pval, which is p[1]:")
-        # print(pval)
-        
-        # print("Value of statistic, which is the minimum of u1 (p[0]) and u2 (group1.shape[0] * group2.shape[0] - p[0]):")
-        # print(statistic)
-        
-        
-        
-        
-        #### The following is the previous code that (sort of) works. I have commented it out for testing ####
-        # from pingouin import mwu 
-        # mw_results = mwu(group1, group2)
+        for gene, row in compdf.iterrows():
+            x = row[group1].values.astype(float)
+            y = row[group2].values.astype(float)
 
-        # mw_results = mw_results.iloc[0, :].values.tolist()
-        # statistic, pval, cles = mw_results[0], mw_results[2], mw_results[4]    
-        # # statistic, pval, cles = ping_res['U-val'], ping_res['p-val'], ping_res['CLES']    
+            t, p = ttest_rel(x, y)
+            tval.append(t)
+            pval.append(p)
 
-        # if median(group1) < median(group2):
-        #     statistic = statistic * -1            
-        # # print(statistic)
-        # # print(pval) 
-        # # print(cles)
-        # return(statistic, pval, cles)
+        newpvaldf = pd.DataFrame({'Target':compdf.index, pcol:pval, tcol: tval})
+        newpvaldf.set_index('Target', inplace=True)
+        return(newpvaldf)
+
+    elif ttype == 'wilcoxon':
+        tval = []
+        pval = []
         
+        for gene, row in compdf.iterrows():
+            x = row[group1].astype(float).values
+            y = row[group2].astype(float).values
+            
+            t, p = wilcoxon(x, y, method="auto", correction = False)
+            tval.append(t)
+            pval.append(p)
+            
+        newpvaldf = pd.DataFrame({'Target':compdf.index, pcol:pval, tcol: tval})
+        newpvaldf.set_index('Target', inplace=True)
+        return(newpvaldf)
         
-        
-        
-        #### This is the new code I am testing ####
+    elif ttype == 'mw':        
         from pingouin import mwu
+
         mw_results = mwu(group1, group2)
         mw_results = mw_results.iloc[0, :].values.tolist()
         mw_results_flipped = mwu(group2, group1)
@@ -145,10 +124,12 @@ def calc_tt(group1, group2, ttype):
         if median(group1) < median(group2):
             neglog_pval = neglog_pval * -1            
 
-        return(mwu_min_ustat, pval, neglog_pval, cles)       
-        
+        return(mwu_min_ustat, pval, neglog_pval, cles)  
+
     
-def calc_group_difference(group1, group2, difftype=["mean", "median"]):
+
+    
+def calculate_additional_comparison_stats(newpvaldf, compdf, name_group1, name_group2, samps_group1, samps_group2, testtype, rankby_col, pval_column, test_stat_column, *args, **kwargs):
     '''
     Calculates the difference of means across two groups
         
@@ -157,11 +138,82 @@ def calc_group_difference(group1, group2, difftype=["mean", "median"]):
             - group2: list of samples in second group
             - difftype: 
     '''
-    if difftype == "mean":
-        return(mean(group2) - mean(group1))
-    elif difftype == "median":
-        return(median(group2) - median(group1))
+    def _calc_group_difference(group1, group2, difftype=["mean", "median"]):
+        '''
+        Calculates the difference of means across two groups
+            
+            Arguments:
+                - group1: list of samples in first group
+                - group2: list of samples in second group
+                - difftype: 
+        '''
+        if difftype == "mean":
+            return(mean(group2) - mean(group1))
+        elif difftype == "median":
+            return(median(group2) - median(group1))
         
+    mean_diff = compdf.apply(lambda row : _calc_group_difference(row[samps_group1], row[samps_group2], difftype="mean"), axis = 1)
+    median_diff = compdf.apply(lambda row : _calc_group_difference(row[samps_group1], row[samps_group2], difftype="median"), axis = 1)
+
+    print("Comparisons finished...") 
+    
+    # Calcuate means per group
+    mean_g2_colname = f"mean_{name_group2}"    
+    mean_g1_colname = f"mean_{name_group1}"      
+    newpvaldf[mean_g2_colname] = compdf[samps_group2].mean(axis=1)
+    newpvaldf[mean_g1_colname] = compdf[samps_group1].mean(axis=1)
+    meandiff_colname = f"difference_of_means_({name_group2}-{name_group1})"      
+    newpvaldf[meandiff_colname] = mean_diff
+    newpvaldf["abs(difference_of_means)"] = abs(mean_diff)
+
+    # Calcuate medians per group    
+    median_g2_colname = f"median_{name_group2}"    
+    median_g1_colname = f"median_{name_group1}"      
+    newpvaldf[median_g2_colname] = compdf[samps_group2].median(axis=1)
+    newpvaldf[median_g1_colname] = compdf[samps_group1].median(axis=1)
+    mediandiff_colname = f"difference_of_medians_({name_group2}-{name_group1})"      
+    newpvaldf[mediandiff_colname] = median_diff
+    newpvaldf["abs(difference_of_medians)"] = abs(median_diff)
+
+    # Perform multiple test correction
+    FDR_colname = "FDR"
+    newpvaldf[FDR_colname] = stats.false_discovery_control(newpvaldf[pval_column])
+    newpvaldf = newpvaldf.sort_values(pval_column, ascending = True)
+    
+    if testtype == "mw": 
+        if rankby_col == "mwu":
+            sortcol = "mw_uvalue"
+        elif rankby_col == "mediandiff":
+            sortcol = f"difference_of_medians_({name_group2}-{name_group1})"
+        elif rankby_col == "meandiff":
+            sortcol = f"difference_of_means_({name_group2}-{name_group1})"
+        elif rankby_col == "neglogp":
+            sortcol = "mw_signed_-log(pvalue)"
+    else:
+        sortcol = test_stat_column
+    
+    # Create new df without pval, ranked on test statistic (as chosen by user)
+    ranked = newpvaldf.sort_values(sortcol, ascending = False)
+    ranked.drop([pval_column, FDR_colname], inplace=True, axis=1)
+    ranked = ranked[sortcol]
+    
+    # Rearrange column order so that FDR calculations comes after p-value
+    if testtype != "mw":
+        colorder = [test_stat_column, pval_column, FDR_colname,
+                    mean_g2_colname, mean_g1_colname,
+                    meandiff_colname, median_g2_colname, median_g1_colname,
+                    mediandiff_colname]
+        newpvaldf = newpvaldf.loc[:, colorder] 
+    else:
+        neglogp_column = kwargs.get('neglogp_column')
+        cles_column = kwargs.get('cles_column')
+        colorder = [test_stat_column, pval_column, neglogp_column, FDR_colname,
+                    cles_column, mean_g2_colname, mean_g1_colname,
+                    meandiff_colname, median_g2_colname, median_g1_colname,
+                    mediandiff_colname]
+        newpvaldf = newpvaldf.loc[:, colorder]
+        
+    return([newpvaldf, ranked])
 
 ############################################################################
 ### Note: The following functions were removed after determing that 
