@@ -7,7 +7,7 @@ import numpy as np
 from .analyze import file_to_list, map_samples
 from sksurv.compare import compare_survival
 from pathlib import Path
-
+from sisana.preprocessing import check_file_extension
 
 __author__ = 'Nolan Newman'
 __contact__ = 'nolankn@uio.no'
@@ -39,6 +39,8 @@ def survival_analysis(metadata, filetype: str, sampgroup_colname: str, alivestat
     
     # Create output directory if one does not already exist
     os.makedirs(outdir, exist_ok=True)
+    
+    check_file_extension(metadata, filetype)
 
     # Get data and metadata
     if filetype == "csv":
