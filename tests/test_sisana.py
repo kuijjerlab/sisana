@@ -26,13 +26,6 @@ def get_zenodo_files(shared_temp_dir):
 def test_fetch(get_zenodo_files):
     assert os.path.exists(join(get_zenodo_files, 'params.yml'))
 
-# @pytest.fixture
-# def load_params(tmp_path):
-#     params_path = join(get_zenodo_files, "params.yml")
-#     params = yaml.load(open(join(tmp_path, "example_inputs", "params.yml")), Loader=yaml.FullLoader)
-#     print(params)
-#     return params
-
 def test_load_params(shared_temp_dir):
     params_path = join(shared_temp_dir, "example_inputs/params.yml")
     params = yaml.load(open(join(params_path)), Loader=yaml.FullLoader)
