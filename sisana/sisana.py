@@ -4,8 +4,7 @@ from importlib.metadata import version
 from sisana.default_parameters import get_default_params 
 from sisana.exceptions import *
 from sisana.preprocessing import preprocess_data, validate_user_params, check_for_header, validate_metadata, check_genelist_top, check_ncore_value, check_no_hyphens_in_group_names, check_num_group_colors
-from sisana.postprocessing import convert_lion_to_pickle, extract_tfs_genes, combine_files
-# from sisana.postprocessing import convert_lion_to_pickle, extract_tfs_genes, quantile_normalize_edges
+from sisana.postprocessing import convert_lion_to_pickle, extract_tfs_genes, combine_files, quantile_normalize_edges
 from sisana.analyze_networks import calculate_panda_degree, calculate_lioness_degree, compare_bw_groups, survival_analysis, perform_gsea, plot_volcano, plot_expression_degree, plot_heatmap, plot_clustermap, summarize
 from sisana.reconstruct import make_panda_network, make_lioness_networks
 from sisana.example_input import find_example_paths, fetch_files
@@ -55,6 +54,7 @@ def cli():
     gsea = subparsers.add_parser('gsea', help='Perform gene set enrichment analysis between sample groups', epilog=sisana.docs.gsea_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
     vis = subparsers.add_parser('visualize', help='Visualize the calculated degrees of each sample group', epilog=sisana.docs.visualize_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
     summ = subparsers.add_parser('summarize', aliases=["summarise"], help='Summarize the outputs in an html file', epilog=sisana.docs.summarize_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
+    qnorm = subparsers.add_parser('quantnorm', help='Quantile normalize network edges', epilog=sisana.docs.quantnorm_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
 
     # options for preprocess subcommand
     pre.add_argument("params", type=str, help='Path to yaml file containing the parameters to use')
@@ -84,6 +84,9 @@ def cli():
     
     # options for summarize subcommand    
     summ.add_argument("logdir", nargs='?', type=str, default="./log_files/", help='Path to the directory containing the previously made log files')
+
+    # options for quantnorm subcommand
+    qnorm.add_argument("params", type=str, help='Path to yaml file containing the parameters to use')
 
     args = parser.parse_args()
 
@@ -151,7 +154,7 @@ def cli():
 
     updated_params = {}
     
-    single_dict_keys = ["preprocess", "reconstruct", "generate", "combine", "compare", "survival", "gsea", "extract"]
+    single_dict_keys = ["preprocess", "reconstruct", "generate", "combine", "compare", "survival", "gsea", "extract", "quantnorm"]
     nested_dict_keys = ["volcano", "quantity", "heatmap"]
 
     for key in single_dict_keys:
@@ -189,9 +192,6 @@ def cli():
                         preprocess_params['outdir'])  
         
         fname, genes_kept, genes_removed = results[0], results[1], results[2] 
-            
-        removed_str = f"genes removed: {genes_removed}"
-        kept_str = f"genes kept: {genes_kept}"
         
         extra_info_preprocess = {"genes removed": genes_removed, "genes kept": genes_kept}
         
@@ -273,16 +273,16 @@ def cli():
     if args.command == "compare":     
         compare_means_params = updated_params['compare']
         
-        check_for_header(compare_means_params['datafile'], compare_means_params['filetype'])
-        check_no_hyphens_in_group_names(compare_means_params["mapfile"])        
-        validate_metadata(compare_means_params['mapfile'])
+        # check_no_hyphens_in_group_names(compare_means_params["mapfile"])        
+        # validate_metadata(compare_means_params['mapfile'])
 
         outfiles = compare_bw_groups(datafile=compare_means_params["datafile"], 
                                     mapfile=compare_means_params["mapfile"], 
                                     datatype=compare_means_params["datatype"], 
                                     groups=compare_means_params["groups"],
                                     testtype=compare_means_params["testtype"], 
-                                    filetype=compare_means_params["filetype"],
+                                    data_filetype=compare_means_params["data_filetype"],
+                                    map_filetype=compare_means_params["map_filetype"],
                                     rankby_col=compare_means_params["rankby"],
                                     outdir=compare_means_params["outdir"])
  
@@ -355,9 +355,10 @@ def cli():
                 raise Exception("Error: No parameters for visualization of 'quantity' have been set in the params.yml file.")
             
             outfiles = plot_expression_degree(datafile=quantity_params["datafile"],
-                        filetype=quantity_params["filetype"], 
+                        data_filetype=quantity_params["data_filetype"], 
                         statsfile=quantity_params["statsfile"], 
                         metadata=quantity_params["metadata"],
+                        metadata_filetype=quantity_params["metadata_filetype"], 
                         plottype=quantity_params["plottype"],
                         groups=quantity_params["groups"],
                         colors=quantity_params["colors"],
@@ -396,8 +397,9 @@ def cli():
                 raise Exception("Error: No parameters for visualization of 'heatmap' have been set in the params.yml file.")
             
             outfiles = plot_clustermap(datafile=heatmap_params["datafile"],
-                        filetype=heatmap_params["filetype"], 
+                        data_filetype=heatmap_params["data_filetype"], 
                         metadata=heatmap_params["metadata"],
+                        metadata_filetype=heatmap_params["metadata_filetype"],
                         genelist=heatmap_params["genelist"],
                         column_cluster=heatmap_params["column_cluster"],
                         row_cluster=heatmap_params["row_cluster"],
@@ -479,9 +481,13 @@ def cli():
     # ########################################################
     # # (Optional) TODO: Quantile normalize edges, then calculate degree
     # ########################################################
-    # if args.command == "quantnorm":     
-    #     qnorm_params = updated_params['quantnorm']
+    if args.command == "quantnorm":  
+        qnorm_params = updated_params['quantnorm']
 
-    #     outfiles = quantile_normalize_edges(infile=qnorm_params["metadata"],
-    #                     filetype=qnorm_params["filetype"], 
-    #                     outdir=qnorm_params["outdir"])
+        print(qnorm_params)
+
+        outfiles = quantile_normalize_edges(net=qnorm_params["network_file"], 
+                        pandafilepath=qnorm_params["pandafilepath"],
+                        outdir=qnorm_params["outdir"],
+                        start=qnorm_params["start"],
+                        end=qnorm_params["end"])

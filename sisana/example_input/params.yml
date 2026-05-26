@@ -49,8 +49,9 @@ combine:
 # example: sisana compare ./example_inputs/params.yml
 compare: 
   datafile: ./example_inputs/lioness_df_indegree_3_decimal_places_subset_200_LumALumB_samps.csv # (Required) Path to the data file (either expression, indegree, or outdegree)
-  filetype: csv # (Required) The type of data file ("csv" or "txt" or "tsv") being used
+  data_filetype: csv # (Required) Type of the datafile file. Must be either "csv", "txt", or "tsv", where csv implies comma separated values and txt/tsv implies tab-separated
   mapfile: ./example_inputs/BRCA_TCGA_200_LumA_LumB_samps_mapping_w_header.csv # (Required) Path to the mapping file, which maps sample name (column 1) to sample group (column 2). Groups cannot have "-" in the name. Assumes file has a header.
+  map_filetype: csv # (Required) The type of mapping file ("csv" or "txt" or "tsv") being used
   groups:  # (Required) Names of the two groups (from the second column of mapfile) to be compared. The second group listed will be used as the numerator in the fold change calulation.
     - LumA
     - LumB
@@ -79,8 +80,8 @@ survival:
 # example: sisana gsea ./example_inputs/params.yml
 gsea:
   genefile: ./output/compare_means/comparison_mw_between_LumA_LumB_degree_ranked_mediandiff.rnk # (Required) Path to file (.rnk format, which is two columns, tab delimited, no header) containing the genes and test statistics to do enrichment on. This file is generated with "sisana compare means"
-  gmtfile: ./example_inputs/Hallmark.v2023.2.Hs.symbols.gmt # (Required) Path to the gene set file in gmt format
-  geneset: Hallmarks # (Required) The gene set type used for gmtfile. This is just a string that gets added to the output file name, so you can describe the specific version used for your GMT file in this name.
+  gmtfile: ./example_inputs/c2.cp.reactome.v2023.2.Hs.symbols.gmt # (Required) Path to the gene set file in gmt format
+  geneset: Reactome # (Required) The gene set type used for gmtfile. This is just a string that gets added to the output file name, so you can describe the specific version used for your GMT file in this name.
   color: viridis # (Optional, Default: viridis) The color scheme to use for the dot plot (e.g. "Reds", "Blues", "viridis", etc.). See https://matplotlib.org/stable/tutorials/colors/colormaps.html for options.
   outdir: ./output/gsea/ # (Optional, Default: ./output/gsea/) The directory to save the output to
 
@@ -111,9 +112,10 @@ visualize:
   # example: sisana visualize quantity ./example_inputs/params.yml
   quantity: 
     datafile: ./example_inputs/lioness_df_indegree_3_decimal_places_subset_200_LumALumB_samps.csv # (Required) Path to file containing the expression, in-degree, or out-degree of each gene per sample.
+    data_filetype: csv # (Required) Type of the datafile file. Must be either "csv", "txt", or "tsv", where csv implies comma separated values and txt/tsv implies tab-separated
     statsfile: ./output/compare_means/comparison_mw_between_LumA_LumB_degree.txt # (Required) Path to TSV file containing the difference in mean/median degree, p-value, and FDR. This file is generated with "sisana compare means".
-    filetype: csv # (Required) Type of the datafile file. Must be either "csv", "txt", or "tsv", where csv implies comma separated values and txt/tsv implies tab-separated
     metadata: ./example_inputs/BRCA_TCGA_200_LumA_LumB_samps_mapping_w_header.csv # (Required) Path to the csv metadata file mapping samples to groups (the names of groups in the group column must match names of the groups arg). Header must be in the format of "name,group". 
+    metadata_filetype: csv # (Required) Type of the metadata file. Must be either "csv", "txt", or "tsv", where csv implies comma separated values and txt/tsv implies tab-separated
     groups:  # (Required) The names of the groups to plot, should ideally be a list of 5 names or less. Groups will be plotted in the order they are written in this argument
       - LumA
       - LumB    
@@ -132,9 +134,10 @@ visualize:
   # example: sisana visualize heatmap params.yml
   heatmap: 
     datafile: ./example_inputs/lioness_df_indegree_3_decimal_places_subset_200_LumALumB_samps.csv # (Required) Path to file containing the expression or indegrees of each gene per sample
-    filetype: csv # (Required) Type of input file, must be either "csv", "txt", or "tsv", where csv implies comma separated values and txt/tsv implies tab-separated
+    data_filetype: csv # (Required) Type of the datafile file. Must be either "csv", "txt", or "tsv", where csv implies comma separated values and txt/tsv implies tab-separated
     statsfile: ./output/compare_means/comparison_mw_between_LumA_LumB_degree.txt # (Required) Path to file with the comparison output performed between two groups. This file is created with "sisana compare means".
     metadata: ./example_inputs/BRCA_TCGA_200_LumA_LumB_samps_mapping_w_header.csv # (Required) Path to the csv metadata file mapping samples to groups (groups must match names of the groupnames arg), must have a header of the format 'name,group'.
+    metadata_filetype: csv # (Required) Type of metadata file, must be either "csv", "txt", or "tsv", where csv implies comma separated values and txt/tsv implies tab-separated
     genelist: ./example_inputs/heatmap_genes.txt # (Required) .txt file containing a list of genes to plot, must match the name of genes in the datafile. 
     category_label_columns: # (Required) The name of column (category of samples) in the metadata file you wish to use for coloring the columns in the clustermap. The clustermap will be grouped by the first name given, unless column_cluster=True
       - group
