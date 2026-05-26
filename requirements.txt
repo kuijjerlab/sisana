@@ -13,4 +13,5 @@ pingouin==0.5.5
 statannotations==0.7.2
 tqdm==4.67.3
 requests==2.32.5
+qnorm==0.9.0
 sisana
