@@ -1,3 +1,4 @@
 from .extract_TFs_genes import extract_tfs_genes
 from .lioness_to_pickle_df import convert_lion_to_pickle
 from .combine import combine_files
+from .quantnorm_edges import quantile_normalize_edges

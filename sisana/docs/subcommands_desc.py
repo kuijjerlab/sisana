@@ -223,3 +223,20 @@ Output files:
   - results_summarized.html
     
 """
+
+quantnorm_desc = """
+-----------------------------------
+(Optional step) - Quantile Normalize Edges
+-----------------------------------
+
+This is an optional step that quantile normalizes network edges
+
+Examples: sisana quantnorm params.yml
+
+Input files:
+  - network_file: The lioness.npy file created in the "reconstruct" step, which is a numpy formatted
+  
+Output files:
+  - lioness_network_quantile_normalized.npy: The quantile normalized version of the input network file, in numpy format. 
+    
+"""
