@@ -53,16 +53,17 @@ def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, 
         mapfile = pd.read_csv(mapfile, index_col = 0, sep = "\t")
     
     check_for_header(datafile, data_filetype)
-    validate_metadata(mapfile)
-        
+    
     if testtype == "tt" or testtype == "mw":
         check_no_hyphens_in_group_names(mapfile)
-        
+        validate_metadata(mapfile, testtype=testtype)
+
         # Assign samples from mapping file to groups
         sampdict = map_samples(mapfile, groups[0], groups[1])
         total_samps = len(sampdict[groups[0]]) + len(sampdict[groups[1]])
     
     elif testtype == "paired_tt" or testtype == "wilcoxon":
+        validate_metadata(mapfile, testtype=testtype, groups=groups)
         sampdict = {}
         sampdict[groups[0]] = list(mapfile.index)
         sampdict[groups[1]] = mapfile.iloc[:,0].tolist()
