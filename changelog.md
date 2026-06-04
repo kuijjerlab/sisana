@@ -1,4 +1,4 @@
-### 1.7.3 (upcoming)
+### 1.7.3
 - Fixed issue where the header validation did not catch files without headers when using a metadata file in the format for a paired comparison
 - Changed gsea color bar formatting so the title does not overlap the dot plot
  
