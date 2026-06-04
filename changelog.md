@@ -1,4 +1,16 @@
-### 1.7.0  (upcoming release)
+### 1.7.3 (upcoming)
+- Fixed issue where the header validation did not catch files without headers when using a metadata file in the format for a paired comparison 
+ 
+### 1.7.2
+- Added additional input validation for checking whether the user's file name matched the input file extension
+- Added the requirement for user to specify metadata file type, as previously the user was forced to use a csv file in some steps
+- Fixed problem with paired comparisons where code would not execute
+- Added unit tests for all comparison types and reformatted so tt, mw, and paired_tt are now all modular functions that are called
+
+### 1.7.1
+- Pinned the versions of required modules to requirements.txt
+
+### 1.7.0
 - Changed the name of the "generate" command to "reconstruct", with backwards compatibility for generate still
 - Fixed an issue where the error "ValueError: setting an array element with a sequence." would reportedly occur for some users if using newer versions of pandas/NumPy
 - Added a "data_color" parameter for the heatmap so the user can choose the color map to use for the heatmap (based on the given color map from https://matplotlib.org/stable/users/explain/colors/colormaps.html)
