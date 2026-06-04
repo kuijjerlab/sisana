@@ -1,5 +1,6 @@
 ### 1.7.3 (upcoming)
-- Fixed issue where the header validation did not catch files without headers when using a metadata file in the format for a paired comparison 
+- Fixed issue where the header validation did not catch files without headers when using a metadata file in the format for a paired comparison
+- Changed gsea color bar formatting so the title does not overlap the dot plot
  
 ### 1.7.2
 - Added additional input validation for checking whether the user's file name matched the input file extension
