@@ -487,7 +487,14 @@ def cli():
         print(qnorm_params)
 
         outfiles = quantile_normalize_edges(net=qnorm_params["network_file"], 
+                        filetype=qnorm_params["filetype"],
                         pandafilepath=qnorm_params["pandafilepath"],
-                        outdir=qnorm_params["outdir"],
+                        num_cpus=qnorm_params["num_cpus"],
                         start=qnorm_params["start"],
                         end=qnorm_params["end"])
+        
+        create_log_file(subcommand="quantnorm", 
+                sisana_version=s_version,
+                netzoopy_version=nzp_version,
+                params_dict=qnorm_params, 
+                filenames=outfiles)

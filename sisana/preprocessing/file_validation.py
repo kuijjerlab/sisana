@@ -180,12 +180,14 @@ def validate_user_params(params_dict, command, subcommand=None):
         outdir: ./output/extract/"""    
     
     params["quantnorm"] = {}
-    params["quantnorm"]["required"] = ["network_file"]    
-    params["quantnorm"]["optional"] = ["outdir", "pandafilepath", "start", "end"]    
+    params["quantnorm"]["required"] = ["network_file", "filetype"]    
+    params["quantnorm"]["optional"] = ["pandafilepath", "num_cpus", "start", "end"]    
     params["quantnorm"]["example"] = """
     quantnorm:
         network_file: ./tmp/lioness.npy
-        outdir: ./output/quantnorm/"""
+        filetype: npy
+        pandafilepath: ./output/network/panda_network.txt
+        num_cpus: 4"""
 
     # Ensure the commands are in the params file. If using a visualize command, then you also need 
     # to specify a subcommand in the params file
@@ -332,7 +334,7 @@ def check_ncore_value(requested_cores):
     if int(requested_cores) > nsamps:
         raise TooManyCoresError(requested_cores, nsamps)
 
-def validate_metadata(df):
+def validate_metadata(df: pd.DataFrame, testtype: str, groups: list=None):
     """
     Description:
         Checks the metadata for correct formatting
@@ -340,16 +342,25 @@ def validate_metadata(df):
     Parameters:
     -----------     
         - df: pd.DataFrame, Metadata data frame that the user supplied in the params file
+        - testtype: str, the type of test the user is running (tt, mw, paired_tt, wilcoxon)
+        - groups: list, the two groups the user is comparing (only required for paired tests)
     
     Returns:
     -----------
         - Nothing
     """
 
-    unique_groups = df.iloc[:, 0].unique()
-    
-    if df.columns[0] in unique_groups:
-        raise Exception("Error: It appears you do not have a header in your mapping file. Please supply a header with contents that are unique from the values in the columns.")
+    if testtype == "paired_tt" or testtype == "wilcoxon":
+        colnames = [df.index.name, df.columns[0]]
+        print(colnames)
+        print(groups)
+        
+        if (sorted(colnames) != sorted(groups)):
+            raise Exception(f"Error: You have specified that you are running a paired test, but your specified groups in your mapping file do not match the column names of your metadata file.")
+            
+    else:
+        if df.columns[0] in df.iloc[:, 0].unique():
+            raise Exception("Error: It appears you do not have a header in your mapping file. Please supply a header with contents that are unique from the values in the columns.")
     
     print(f"Header of metadata file appears valid. Continuing...")
     
