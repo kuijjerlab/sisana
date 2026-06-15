@@ -4,6 +4,7 @@ import pandas as pd
 from pathlib import Path
 import sys
 from sisana.exceptions import NumColorsNumGroupsMismatchError, TooManyCoresError, ExtensionMismatchError
+import os 
 
 def validate_user_params(params_dict, command, subcommand=None):
     """
@@ -315,8 +316,8 @@ def check_for_header(df, delim):
 def check_ncore_value(requested_cores):
     """
     Description:
-        Checks to make sure that the number of cores requested by the user is not more than the number of samples. This is necessary
-        not only as a way to reduce computational load, but also because Lioness will encounter the error "AttributeError: 'Lioness' object 
+        Checks to make sure that the number of cores requested by the user is not more than the number of samples or more than the number of available cores. 
+        This is necessary not only as a way to reduce computational load, but also because Lioness will encounter the error "AttributeError: 'Lioness' object 
         has no attribute 'total_lioness_network'" if not enforced.
 
     Parameters:
@@ -327,12 +328,19 @@ def check_ncore_value(requested_cores):
     -----------
         - Nothing
     """
-    
+    # Check if the specified number of cores is less than or equal to those available
+    available_cores = os.cpu_count() - 1 # leaving one core free to prevent overloading the machine
+    if requested_cores > available_cores:
+        raise Exception(f"Error: The number of cores specified for LIONESS network reconstruction ({requested_cores}) is greater than the number of cores on this machine, minus 1 ({available_cores}). Please edit your params file to specify a number of cores less than or equal to {available_cores}.")
+
+    # Check if the specified number of cores is less than or equal to the number of samples
     with open('./tmp/num_samples.txt') as f:
         nsamps = int(f.read())
             
     if int(requested_cores) > nsamps:
         raise TooManyCoresError(requested_cores, nsamps)
+    
+
 
 def validate_metadata(df: pd.DataFrame, testtype: str, groups: list=None):
     """
