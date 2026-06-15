@@ -115,8 +115,17 @@ def plot_clustermap(datafile: str, data_filetype: str, metadata: str, metadata_f
     from scipy.stats import zscore
     
     print("Performing z-score normalization...")
+    
     # Calculate z-scores across samples
-    filtered_z = filtered.apply(zscore, axis=1)
+    # filtered_z = filtered.apply(zscore, axis=1)
+    
+    ################################
+    ### Suggested change from review
+    ################################
+    filtered_z = pd.DataFrame(
+                    zscore(filtered, axis=1),
+                    index=filtered.index,
+                    columns=filtered.columns)
     
     # Perform hierarchical clustering
     print("Running linkage. Please be patient as this step may take some time...")
