@@ -159,3 +159,10 @@ extract:
   pickle: ./tmp/lioness.pickle # (Optional, Default: ./tmp/lioness.pickle) The path to the pickle file created in the "reconstruct" step. By default, this will be made in the tmp directory.
   sampnames: ./tmp/samples.txt # (Optional, Default: ./tmp/samples.txt) The path to the tmp/samples.txt file, which is a text file that is generated in the preprocess step. By default, this will be made in the tmp directory.
   outdir: ./output/extract/ # (Optional, Default: ./output/extract/) The directory to save the output file to
+
+quantnorm:
+  network_file: ./output/network/lioness_networks.npy # (Required) Path to the lioness output file created in the "reconstruct" step. Must have a .npy extension.
+  filetype: npy # (Required) The type of data file ("npy") being used.
+  pandafilepath: ./output/network/panda_network.txt # (Optional, Default: ./output/network/panda_network.txt) Path to the PANDA output file created in the "reconstruct" step. Must have a .txt extension.
+  outdir: ./output/quantnorm/ # (Optional, Default: ./output/quantnorm/) The directory to save the output to
+  num_cpus: 4 # (Optional, Default: 4) The number of CPUs to use for quantile normalization. If your dataset is large and you have the computational resources, you can increase this number to speed up quantile normalization, but you will likely get diminishing returns after 4 CPUs.

@@ -103,8 +103,8 @@ def get_default_params():
 
     def_params["quantnorm"] = {}
     def_quantnorm = def_params["quantnorm"]
-    def_quantnorm["outdir"] = "./output/quantnorm/"
     def_quantnorm["pandafilepath"] = "./output/network/panda_network.txt"
+    def_quantnorm["num_cpus"] = 4
     def_quantnorm["start"] = None
     def_quantnorm["end"] = None
 
